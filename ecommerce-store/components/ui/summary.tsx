@@ -20,9 +20,10 @@ declare global {
 const Summary = () => {
   const searchParams = useSearchParams();
   const store = getSessionData();
+  console.log("store", store);
   const useCart = createCartStore(store.username);
   const items = useCart.getState().getItems();
-  const removeAll = useCart((state) => state.removeAll);
+  const removeAll: () => void = useCart((state: { removeAll: () => void }) => state.removeAll);
 
   useEffect(() => {
     if (searchParams.get('success')) {
@@ -35,14 +36,26 @@ const Summary = () => {
     }
   }, [searchParams, removeAll]);
 
-  const totalPrice = items.reduce((total, item) => {
-    return total + Number(item.price)
+  const totalPrice = items.reduce((total: number, item: { price: string }) => {
+    return total + Number(item.price);
   }, 0);
 
   const onCheckout = async () => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-        productIds: items.map((item) => item.id)
+      interface CheckoutResponse {
+        orderId: string;
+        amount: number;
+        currency: string;
+        keyId: string;
+      }
+
+      interface CartItem {
+        id: string;
+        price: string;
+      }
+      
+      const response = await axios.post<CheckoutResponse>(`${store.apiUrl}/checkout`, {
+        productIds: items.map((item: CartItem) => item.id)
       });
 
       const { orderId, amount, currency, keyId } = response.data;
