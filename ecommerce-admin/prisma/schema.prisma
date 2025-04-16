@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Store {
+  id              String    @id @default(uuid())
+  name            String
+  userId          String
+  username        String?   @unique
+  apiUrl          String?
+  homeBillboardId String?
+  homeBillboard   Billboard? @relation("StoreToHomeBillboard", fields: [homeBillboardId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  billboards      Billboard[] @relation("StoreToBillboard")
+  categories      Category[] @relation("StoreToCategory")
+  products        Product[]  @relation("StoreToProduct")
+  sizes           Size[]     @relation("StoreToSize")
+  colors          Color[]     @relation("StoreToColor")
+  orders          Order[]     @relation("StoreToOrder")
+  customers       Customer[]  @relation("StoreToCustomer")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([homeBillboardId])
+}
+
+model Customer {
+  id              String    @id @default(uuid())
+  storeId         String
+  store           Store     @relation("StoreToCustomer", fields: [storeId], references: [id])
+  fullName        String
+  email           String    @default("")
+  phone           String
+  shippingAddress String    @db.Text
+  orders          Order[]   @relation("CustomerToOrder")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([storeId])
+}
+
+model Order {
+  id              String    @id @default(uuid())
+  storeId         String    
+  store           Store     @relation("StoreToOrder", fields: [storeId], references: [id])
+  customerId      String?  
+  customer        Customer? @relation("CustomerToOrder", fields: [customerId], references: [id])
+  orderItems      OrderItem[] 
+  isPaid          Boolean   @default(false)
+  phone           String    @default("")
+  email           String?
+  address         String    @default("")
+  paymentStatus   String    @default("pending")
+  paymentMethod   String    @default("cash")
+  orderStatus     String    @default("draft")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([storeId])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String  
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String  
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Billboard {
+  id          String @id @default(uuid())
+  storeId     String
+  store       Store @relation("StoreToBillboard", fields: [storeId], references: [id])
+  label       String
+  imageUrl    String
+  categories  Category[]
+  storesAsHome Store[] @relation("StoreToHomeBillboard")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([storeId])
+}
+
+model Category {
+  id          String      @id @default(uuid())
+  storeId     String      
+  store       Store       @relation("StoreToCategory", fields: [storeId], references: [id])
+  billboardId String      
+  billboard   Billboard   @relation(fields: [billboardId], references: [id])
+  name        String
+  products    Product[]   @relation("CategoryToProduct")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([storeId])
+  @@index([billboardId])
+}
+
+model Product {
+  id                String    @id @default(uuid())
+  storeId           String    
+  store             Store     @relation("StoreToProduct", fields: [storeId], references: [id])
+  categoryId        String    
+  category          Category  @relation("CategoryToProduct", fields: [categoryId], references: [id])
+  name              String
+  description       String    @db.Text
+  price             Decimal   @db.Decimal(10, 2)
+  costPerItem       Decimal   @db.Decimal(10, 2) @default(0)
+  profitMargin      Decimal   @db.Decimal(10, 2) @default(0)
+  taxes             String?   @db.Text
+  sku               String    @unique
+  stockQuantity     Int       @default(0)
+  sellWhenOutOfStock Boolean  @default(false)
+  requiresShipping  Boolean   @default(true)
+  weight            Decimal?  @db.Decimal(10, 2)
+  weightUnit        String?   @default("kg")
+  length            Decimal?  @db.Decimal(10, 2)
+  width             Decimal?  @db.Decimal(10, 2)
+  height            Decimal?  @db.Decimal(10, 2)
+  isFeatured        Boolean   @default(false)
+  isArchived        Boolean   @default(false)
+  sizeId            String    
+  size              Size      @relation(fields: [sizeId], references: [id])
+  colorId           String    
+  color             Color     @relation(fields: [colorId], references: [id])
+  images            Image[]   
+  orderItems        OrderItem[]   
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([sizeId])
+  @@index([colorId])
+}
+
+model Size {
+  id          String    @id @default(uuid())
+  storeId     String    
+  store       Store     @relation("StoreToSize", fields: [storeId], references: [id])
+  name        String
+  value       String
+  products    Product[] 
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([storeId])
+}
+
+model Color {
+  id          String   @id @default(uuid())
+  storeId     String   
+  store       Store    @relation("StoreToColor", fields: [storeId], references: [id])
+  name        String
+  value       String
+  products    Product[] 
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([storeId])
+}
+
+model Image {
+  id          String   @id @default(uuid())
+  productId   String   
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String   
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+}
