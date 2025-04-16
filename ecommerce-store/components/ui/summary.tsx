@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Script from 'next/script';
 
 import Button from "@/components/ui/button";
@@ -19,8 +19,8 @@ declare global {
 
 const Summary = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const store = getSessionData();
-  console.log("store", store);
   const useCart = createCartStore(store.username);
   const items = useCart.getState().getItems();
   const removeAll: () => void = useCart((state: { removeAll: () => void }) => state.removeAll);
@@ -29,12 +29,14 @@ const Summary = () => {
     if (searchParams.get('success')) {
       toast.success('Payment completed.');
       removeAll();
+      router.push(`/${store.username}`); // Redirect to store homepage on success
     }
 
     if (searchParams.get('canceled')) {
       toast.error('Something went wrong.');
+      router.push(`/${store.username}/cart`); // Redirect back to cart on failure
     }
-  }, [searchParams, removeAll]);
+  }, [searchParams, removeAll, router, store.username]);
 
   const totalPrice = items.reduce((total: number, item: { price: string }) => {
     return total + Number(item.price);
@@ -64,12 +66,18 @@ const Summary = () => {
         key: keyId,
         amount: amount,
         currency: currency,
-        name: "Your Store Name",
+        name: store.name || "Store",
         description: "Purchase Description",
         order_id: orderId,
         handler: function (response: any) {
           toast.success('Payment successful!');
           removeAll();
+          router.push(`/${store.username}?success=true`); // Redirect to store homepage with success parameter
+        },
+        modal: {
+          ondismiss: function() {
+            router.push(`/${store.username}/cart?canceled=true`); // Redirect back to cart if modal is dismissed
+          }
         },
         prefill: {
           email: "customer@example.com",
@@ -82,7 +90,9 @@ const Summary = () => {
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error) {
-      toast.error('Something went wrong.');
+      console.error('Checkout error:', error);
+      toast.error('Something went wrong with the checkout process.');
+      router.push(`/${store.username}/cart?canceled=true`);
     }
   };
 
