@@ -47,6 +47,7 @@ model Customer {
 model Order {
   id              String    @id @default(uuid())
   storeId         String    
+  paymentId       String?   @unique 
   store           Store     @relation("StoreToOrder", fields: [storeId], references: [id])
   customerId      String?  
   customer        Customer? @relation("CustomerToOrder", fields: [customerId], references: [id])

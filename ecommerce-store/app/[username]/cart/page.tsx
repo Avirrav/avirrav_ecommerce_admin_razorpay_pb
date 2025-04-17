@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import Container from '@/components/ui/container';
 import { createCartStore } from "@/hooks/use-cart";
-
-import Summary from './components/summary';
 import CartItem from './components/cart-item';
 import { getSessionData } from '@/lib/utils';
 import { Product } from '@/types';
+import Button from '@/components/ui/button';
 
 export const revalidate = 0;
 
 const CartPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [cartItems, setCartItems] = useState<Product[]>([]);
+  const router = useRouter();
   
   const store = getSessionData();
   const useCart = createCartStore(store.username);
@@ -24,21 +25,22 @@ const CartPage = () => {
   }, []);
 
   useEffect(() => {
-    // Subscribe to cart changes
     const unsubscribe: () => void = useCart.subscribe((state: { items: Product[] }) => {
       setCartItems(state.items);
     });
 
-    // Initial cart items
     setCartItems(useCart.getState().items);
 
-    // Cleanup subscription
     return () => unsubscribe();
   }, [useCart]);
 
   if (!isMounted) {
     return null;
   }
+
+  const onCheckout = () => {
+    router.push(`/${store.username}/checkout`);
+  };
 
   return (
     <div className="bg-white">
@@ -54,7 +56,15 @@ const CartPage = () => {
                 ))}
               </ul>
             </div>
-            <Summary />
+            <div className="lg:col-span-5">
+              <Button 
+                onClick={onCheckout} 
+                disabled={cartItems.length === 0} 
+                className="w-full mt-6"
+              >
+                Go to Checkout
+              </Button>
+            </div>
           </div>
         </div>
       </Container>

@@ -18,9 +18,15 @@ export async function POST(
 ) {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    console.log('Razorpay Order ID:', razorpay_order_id, 'Razorpay Payment ID:', razorpay_payment_id, 'Razorpay Signature:', razorpay_signature);
+
+    if (!razorpay_signature) {
+      return new NextResponse("Webhook signature missing", { status: 400 });
+    }
 
     // Verify signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
+    
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(body.toString())
@@ -35,15 +41,18 @@ export async function POST(
     // Update order status
     const order = await prismadb.order.update({
       where: {
-        id: razorpay_order_id,
+      paymentId: razorpay_payment_id,
       },
       data: {
-        isPaid: true,
+      isPaid: true,
+      paymentStatus: 'paid',
+      orderStatus: 'confirmed'
       },
       include: {
-        orderItems: true,
+      orderItems: true,
       },
     });
+
 
     return NextResponse.json({ message: "Payment verified successfully" }, {
       headers: corsHeaders,
