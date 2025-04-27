@@ -20,8 +20,7 @@ interface ProductCard {
 const ProductCard: React.FC<ProductCard> = ({ data, username }) => {
   const previewModal = usePreviewModal();
   const router = useRouter();
-  const store = getSessionData();
-  const cartStore = createCartStore(store.username || username);
+  const cartStore = createCartStore(username);
 
   const handleClick = () => {
     router.push(`${username}/product/${data?.id}`);
