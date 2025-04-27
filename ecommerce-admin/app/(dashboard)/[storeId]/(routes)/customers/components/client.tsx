@@ -32,7 +32,13 @@ export const CustomersClient: React.FC<CustomersClientProps> = ({ data }) => {
         </Button>
       </div>
       <Separator />
-      <DataTable searchKey="fullName" columns={columns} data={data} />
+      <DataTable 
+        searchKey="fullName" 
+        columns={columns} 
+        data={data} 
+        entityName="customers"
+        storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
+      />
       <Heading title="API" description="API Calls for Customers" />
       <Separator />
       <ApiList entityName="customers" entityIdName="customerId" />

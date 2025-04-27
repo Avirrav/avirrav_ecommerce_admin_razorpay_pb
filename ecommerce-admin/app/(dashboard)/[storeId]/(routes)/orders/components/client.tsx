@@ -32,7 +32,13 @@ export const OrderClient: React.FC<OrderClientProps> = ({ data }) => {
         </Button>
       </div>
       <Separator />
-      <DataTable searchKey="products" columns={columns} data={data} />
+      <DataTable 
+        searchKey="products" 
+        columns={columns} 
+        data={data} 
+        entityName="orders"
+        storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
+      />
       <Heading title="API" description="API calls for Orders" />
       <Separator />
       <ApiList entityName="orders" entityIdName="orderId" />

@@ -32,7 +32,13 @@ export const ProductsClient = ({ data }: ProductsClientProps) => {
       </div>
 
       <Separator />
-      <DataTable searchKey='name' columns={columns} data={data} />
+      <DataTable 
+        searchKey='name' 
+        columns={columns} 
+        data={data} 
+        entityName="products"
+        storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
+      />
       <Heading title='API' description='API calls for Products' />
       <Separator />
       <ApiList entityName='products' entityIdName='productId' />

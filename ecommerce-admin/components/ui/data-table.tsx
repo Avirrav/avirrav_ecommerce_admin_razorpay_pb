@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -21,19 +22,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AlertModal } from '@/components/modals/alert-modal';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchKey: string;
+  entityName?: string;
+  storeId?: string;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
   searchKey,
+  entityName,
+  storeId,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const table = useReactTable({
     data,
     columns,
@@ -41,14 +53,47 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
     state: {
       columnFilters,
+      rowSelection,
     },
   });
 
+  const handleBulkDelete = async () => {
+    try {
+      setLoading(true);
+      const selectedRows = table.getSelectedRowModel().rows;
+      const selectedIds = selectedRows.map(row => row.original.id);
+
+      // Delete each selected item
+      await Promise.all(
+        selectedIds.map(id => 
+          axios.delete(`/api/${storeId}/${entityName?.toLowerCase()}/${id}`)
+        )
+      );
+
+      // Clear selection
+      setRowSelection({});
+      toast.success(`Selected ${entityName} deleted successfully`);
+      window.location.reload();
+    } catch (error) {
+      toast.error('Something went wrong');
+    } finally {
+      setLoading(false);
+      setOpen(false);
+    }
+  };
+
   return (
     <div>
-      <div className='flex items-center py-4'>
+      <AlertModal 
+        isOpen={open} 
+        onClose={() => setOpen(false)}
+        onConfirm={handleBulkDelete}
+        loading={loading}
+      />
+      <div className='flex items-center justify-between py-4'>
         <Input
           placeholder='Search...'
           value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
@@ -57,12 +102,28 @@ export function DataTable<TData, TValue>({
           }
           className='max-w-sm'
         />
+        {table.getSelectedRowModel().rows.length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setOpen(true)}
+          >
+            Delete Selected ({table.getSelectedRowModel().rows.length})
+          </Button>
+        )}
       </div>
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={table.getIsAllRowsSelected()}
+                    onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
+                    aria-label="Select all"
+                  />
+                </TableHead>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -85,6 +146,13 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
+                  <TableCell className="w-12">
+                    <Checkbox
+                      checked={row.getIsSelected()}
+                      onCheckedChange={(value) => row.toggleSelected(!!value)}
+                      aria-label="Select row"
+                    />
+                  </TableCell>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -98,7 +166,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columns.length + 1}
                   className='h-24 text-center'
                 >
                   No results.

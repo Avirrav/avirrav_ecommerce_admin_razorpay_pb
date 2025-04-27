@@ -20,22 +20,28 @@ export const ColorsClient = ({ data }: ColorsClientProps) => {
   const router = useRouter();
   return (
     <>
-      <div className='flex items-center justify-between'>
+      <div className="flex items-center justify-between">
         <Heading
           title={`Colors(${data.length})`}
-          description='Manage Colors of your Products'
+          description="Manage Colors of your Products"
         />
         <Button onClick={() => router.push(`/${params.storeId}/colors/new`)}>
-          <Plus className='mr-2 h-4 w-4' />
+          <Plus className="mr-2 h-4 w-4" />
           Add new
         </Button>
       </div>
 
       <Separator />
-      <DataTable searchKey='name' columns={columns} data={data} />
-      <Heading title='API' description='API calls for colors' />
+      <DataTable 
+        searchKey="name" 
+        columns={columns} 
+        data={data} 
+        entityName="colors"
+        storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
+      />
+      <Heading title="API" description="API calls for colors" />
       <Separator />
-      <ApiList entityName='colors' entityIdName='colorsId' />
+      <ApiList entityName="colors" entityIdName="colorsId" />
     </>
   );
 };

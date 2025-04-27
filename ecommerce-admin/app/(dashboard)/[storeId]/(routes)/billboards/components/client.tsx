@@ -34,7 +34,13 @@ export const BillboardClient = ({ data }: BillboardClientProps) => {
       </div>
 
       <Separator />
-      <DataTable searchKey='label' columns={columns} data={data} />
+      <DataTable 
+        searchKey='label' 
+        columns={columns} 
+        data={data} 
+        entityName="billboards"
+        storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
+      />
       <Heading title='API' description='API calls for Billboards' />
       <Separator />
       <ApiList entityName='billboards' entityIdName='billboardId' />
