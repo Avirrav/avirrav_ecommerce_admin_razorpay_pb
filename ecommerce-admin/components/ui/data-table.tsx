@@ -25,6 +25,7 @@ import {
 import { AlertModal } from '@/components/modals/alert-modal';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { set } from 'zod';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -66,9 +67,10 @@ export function DataTable<TData extends { id: string }, TValue>({
       const selectedRows = table.getSelectedRowModel().rows;
       const selectedIds = selectedRows.map(row => row.original.id);
 
+
       // Delete each selected item
       await Promise.all(
-        selectedIds.map(id => 
+        selectedIds.map(id =>
           axios.delete(`/api/${storeId}/${entityName?.toLowerCase()}/${id}`)
         )
       );
@@ -87,8 +89,8 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   return (
     <div>
-      <AlertModal 
-        isOpen={open} 
+      <AlertModal
+        isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={handleBulkDelete}
         loading={loading}
@@ -102,6 +104,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           }
           className='max-w-sm'
         />
+
         {table.getSelectedRowModel().rows.length > 0 && (
           <Button
             variant="destructive"
@@ -130,9 +133,9 @@ export function DataTable<TData extends { id: string }, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
