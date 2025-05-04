@@ -13,7 +13,8 @@ export type ProductColumn = {
   isFeatured: boolean;
   isArchived: boolean;
   createdAt: string;
-};
+  stockQuantity: number;
+};  
 
 export const columns: ColumnDef<ProductColumn>[] = [
   {

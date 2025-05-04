@@ -21,13 +21,13 @@ export const ProductsClient = ({ data }: ProductsClientProps) => {
   const router = useRouter();
   const params = useParams();
   const [showStockModal, setShowStockModal] = useState(false);
-
+console.log('data', data);
   return (
     <>
       <StockModal
         isOpen={showStockModal}
         onClose={() => setShowStockModal(false)}
-        product={data}
+        products={data}
       />
       <div className='flex items-center justify-between'>
         <Heading
