@@ -56,10 +56,6 @@ export function MainNav({
       label: 'Settings',
       active: pathName === `/${params.storeId}/settings`,
     },
-    {
-      href: 'https://e-commerce-store-sagar.vercel.app',
-      label: 'Store',
-    },
   ];
 
   return (
