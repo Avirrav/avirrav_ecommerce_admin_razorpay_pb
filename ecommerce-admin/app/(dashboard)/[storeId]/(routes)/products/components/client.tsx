@@ -9,7 +9,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { ApiList } from '@/components/ui/api-list';
-import StockModal from '@/components/ui/stock-modal';
+import StockModal  from '@/components/ui/stock-modal';
 
 import { ProductColumn, columns } from './columns';
 
@@ -24,10 +24,10 @@ export const ProductsClient = ({ data }: ProductsClientProps) => {
 
   return (
     <>
-      <StockModal 
-        isOpen={showStockModal} 
+      <StockModal
+        isOpen={showStockModal}
         onClose={() => setShowStockModal(false)}
-        products={data}
+        product={data}
       />
       <div className='flex items-center justify-between'>
         <Heading
@@ -50,10 +50,10 @@ export const ProductsClient = ({ data }: ProductsClientProps) => {
       </div>
 
       <Separator />
-      <DataTable 
-        searchKey='name' 
-        columns={columns} 
-        data={data} 
+      <DataTable
+        searchKey='name'
+        columns={columns}
+        data={data}
         entityName="products"
         storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
       />
