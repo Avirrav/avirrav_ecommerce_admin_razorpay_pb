@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation';
 import prismadb from '@/lib/prismadb';
 import { ThemeToggle } from './theme-toggle';
 import { Sidebar } from './sidebar';
+import { FileText } from 'lucide-react';
+import { Button } from './ui/button';
+import { useRouter } from 'next/navigation';
 
 const Navbar = async () => {
   const { userId } = auth();
@@ -25,6 +28,11 @@ const Navbar = async () => {
         <MainNav className='m-6 hidden sm:block' />
         <div className='ml-auto flex items-center space-x-4'>
           <ThemeToggle />
+          <Button variant="ghost" size="icon" asChild>
+            <a href="/documentation" target="_blank">
+              <FileText className="h-5 w-5" />
+            </a>
+          </Button>
           <UserButton afterSignOutUrl='/' />
         </div>
         <Sidebar />
