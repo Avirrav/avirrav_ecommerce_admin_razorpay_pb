@@ -39,7 +39,8 @@ export async function POST(
     if (!productIds || productIds.length === 0) {
       return new NextResponse("Product ids are required", { status: 400 });
     }
-    console.log('Product IDs:', productIds, 'Amount:', amount,  'Full Name:', fullName, 'Email:', email, 'Phone:', phone, 'Address Line 1:', addressLine1, 'Address Line 2:', addressLine2, 'City:', city, 'State:', state, 'Postal Code:', postalCode, 'Country:', country);
+
+    // Check stock availability for all products
     const products = await prismadb.product.findMany({
       where: {
         id: {
@@ -47,6 +48,21 @@ export async function POST(
         }
       }
     });
+
+    // Create a map of product quantities
+    const productQuantityMap = productIds.reduce((acc: { [key: string]: number }, id: string) => {
+      acc[id] = (acc[id] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Check if any product is out of stock
+    for (const product of products) {
+      const requestedQuantity = productQuantityMap[product.id] || 0;
+      if (!product.sellWhenOutOfStock && product.stockQuantity < requestedQuantity) {
+        return new NextResponse(`Product ${product.name} is out of stock`, { status: 400 });
+      }
+    }
+
     // Create customer record
     const customer = await prismadb.customer.create({
       data: {
@@ -71,28 +87,49 @@ export async function POST(
       currency: "INR",
       receipt: `order_${Date.now()}`,
     });
-    console.log('Razorpay Order:', razorpayOrder);
-    const order = await prismadb.order.create({
-      data: {
-      storeId: params.storeId,
-      customerId: customer.id,
-      isPaid: false,
-      phone,
-      email: email || '',
-      address: addressLine1,
-      paymentId: razorpayOrder.id,
-      orderItems: {
-        create: productIds.map((productId: string) => ({
-        product: {
-          connect: {
-          id: productId
-          }
+
+    // Create order and update stock quantities in a transaction
+    const order = await prismadb.$transaction(async (tx) => {
+      // Create the order
+      const newOrder = await tx.order.create({
+        data: {
+          storeId: params.storeId,
+          customerId: customer.id,
+          isPaid: false,
+          phone,
+          email: email || '',
+          address: addressLine1,
+          paymentId: razorpayOrder.id,
+          orderItems: {
+            create: productIds.map((productId: string) => ({
+              product: {
+                connect: {
+                  id: productId
+                }
+              }
+            }))
+          },
+        },
+      });
+
+      // Update stock quantities
+      for (const product of products) {
+        const quantityOrdered = productQuantityMap[product.id] || 0;
+        if (!product.sellWhenOutOfStock) {
+          await tx.product.update({
+            where: { id: product.id },
+            data: {
+              stockQuantity: {
+                decrement: quantityOrdered
+              }
+            }
+          });
         }
-        }))
-      },
-      },
+      }
+
+      return newOrder;
     });
-    console.log('Order:', order);
+
     return NextResponse.json(razorpayOrder, {
       headers: corsHeaders
     });

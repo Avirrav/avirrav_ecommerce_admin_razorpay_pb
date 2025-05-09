@@ -51,6 +51,23 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 405 });
     }
 
+    // Check stock availability for all products
+    const products = await prismadb.product.findMany({
+      where: {
+        id: {
+          in: Object.keys(quantities)
+        }
+      }
+    });
+
+    // Check if any product is out of stock
+    for (const product of products) {
+      const requestedQuantity = quantities[product.id] || 0;
+      if (!product.sellWhenOutOfStock && product.stockQuantity < requestedQuantity) {
+        return new NextResponse(`Product ${product.name} is out of stock`, { status: 400 });
+      }
+    }
+
     // Prepare the shipping address
     const shippingAddress = JSON.stringify({
       addressLine1,
@@ -76,29 +93,49 @@ export async function POST(
       finalCustomerId = customer.id;
     }
 
-    // Create the order
-    const order = await prismadb.order.create({
-      data: {
-        storeId: params.storeId,
-        customerId: finalCustomerId,
-        phone,
-        email,
-        address: addressLine1, // Store the primary address
-        paymentStatus,
-        paymentMethod,
-        orderStatus,
-        isPaid,
-        orderItems: {
-          create: Object.entries(quantities).map(([productId, quantity]) => ({
-            product: {
-              connect: {
-                id: productId
+    // Create the order and update stock quantities in a transaction
+    const order = await prismadb.$transaction(async (tx) => {
+      // Create the order
+      const newOrder = await tx.order.create({
+        data: {
+          storeId: params.storeId,
+          customerId: finalCustomerId,
+          phone,
+          email,
+          address: addressLine1,
+          paymentStatus,
+          paymentMethod,
+          orderStatus,
+          isPaid,
+          orderItems: {
+            create: Object.entries(quantities).map(([productId, quantity]) => ({
+              product: {
+                connect: {
+                  id: productId
+                }
+              },
+              quantity: Number(quantity)
+            }))
+          }
+        }
+      });
+
+      // Update stock quantities
+      for (const product of products) {
+        const quantityOrdered = quantities[product.id] || 0;
+        if (!product.sellWhenOutOfStock) {
+          await tx.product.update({
+            where: { id: product.id },
+            data: {
+              stockQuantity: {
+                decrement: quantityOrdered
               }
-            },
-            quantity
-          }))
+            }
+          });
         }
       }
+
+      return newOrder;
     });
   
     return NextResponse.json(order);
