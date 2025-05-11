@@ -1,8 +1,12 @@
+import prismadb from '@/lib/prismadb';
+import { auth } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 import { getGraphRevenue } from '@/actions/get-graph-revenue';
 import { getSalesCount } from '@/actions/get-sales-count';
 import { getStockCount } from '@/actions/get-stock-count';
 import { getTotalRevenue } from '@/actions/get-total-revenue';
 import { Overview } from '@/components/overview';
+import { SetupGuide } from '@/components/setup-guide';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
@@ -18,12 +22,83 @@ const DashboardPage = async ({ params }: DashboardPageProps) => {
   const salesCount = await getSalesCount(params.storeId);
   const stockCount = await getStockCount(params.storeId);
   const graphRevenue = await getGraphRevenue(params.storeId);
+  const { userId } = auth();
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
+  const store = await prismadb.store.findFirst({
+    where: {
+      id: params.storeId,
+      userId,
+    },
+  });
+
+  if (!store) {
+    redirect('/');
+  }
+
+  // Check if billboards exist
+  const billboards = await prismadb.billboard.findMany({
+    where: {
+      storeId: params.storeId,
+    },
+  });
+
+  // Check if categories exist
+  const categories = await prismadb.category.findMany({
+    where: {
+      storeId: params.storeId,
+    },
+  });
+
+  // Check if colors exist
+  const colors = await prismadb.color.findMany({
+    where: {
+      storeId: params.storeId,
+    },
+  });
+  // Check if products exist
+  const products = await prismadb.product.findMany({
+    where: {
+      storeId: params.storeId,
+    },
+  });
+  const steps = [
+    {
+      title: "Store Details",
+      description: "Fill in your store details including name, username, and API URL",
+      completed: !!store.name && !!store.username && !!store.apiUrl
+    },
+    {
+      title: "Create Billboards",
+      description: "Add promotional billboards for your store",
+      completed: billboards.length > 0
+    },
+    {
+      title: "Add Categories",
+      description: "Create product categories for better organization",
+      completed: categories.length > 0
+    },
+    {
+      title: "Add Colors",
+      description: "Define available colors for your products",
+      completed: colors.length > 0
+    },
+    {
+      title: "Add Products",
+      description: "Start adding products to your store",
+      completed: products.length > 0
+    }
+  ];
+
 
   return (
     <div className='flex-col'>
       <div className='flex-1 space-y-4 p-4 md:p-8 md:pt-6'>
         <Heading title='Dashboard' description='Overview of your store' />
         <Separator />
+        <SetupGuide steps={steps} />
         <div className='grid gap-4 md:grid-cols-3'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
