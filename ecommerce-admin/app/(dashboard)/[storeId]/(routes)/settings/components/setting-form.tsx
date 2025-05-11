@@ -37,7 +37,10 @@ interface SettingFormProps {
 }
 
 const formSchema = z.object({
-  name: z.string().min(1),
+  name: z.string()
+    .min(1, "Store name is required")
+    .max(16, "Store name must be at most 16 characters")
+    .length(16, "Store name must be exactly 16 characters"),
   username: z.string().min(1),
   apiUrl: z.string().min(1),
   homeBillboardId: z.string().optional(),
