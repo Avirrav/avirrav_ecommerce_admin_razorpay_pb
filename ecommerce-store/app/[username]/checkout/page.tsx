@@ -96,7 +96,6 @@ const CheckoutPage = () => {
       });
 
       const { orderId, amount, currency, } = response.data;
-      console.log('Checkout response:', response.data);
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,

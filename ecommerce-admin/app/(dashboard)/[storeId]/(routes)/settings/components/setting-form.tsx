@@ -7,7 +7,7 @@ import { Store, Billboard } from '@prisma/client';
 import { Trash } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -27,6 +27,7 @@ import { AlertModal } from '@/components/modals/alert-modal';
 import { ApiAlert } from '@/components/ui/api-alert';
 import { useOrigin } from '@/hooks/user-origin';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { testRazorpayConnection } from './testing_razorpay_connection';
 
 interface SettingFormProps {
   initialData: Store & {
@@ -50,10 +51,12 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
   const params = useParams();
   const router = useRouter();
   const origin = useOrigin();
+  const searchParams = useSearchParams();
   
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -69,6 +72,30 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
 
   const username = form.watch('username');
   const debouncedUsername = useDebounce(username, 500);
+
+  useEffect(() => {
+    // Load Razorpay SDK
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    if (searchParams.get('success')) {
+      toast.success('Payment completed.');
+    }
+
+    if (searchParams.get('canceled')) {
+      toast.error('Something went wrong.');
+    }
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [searchParams]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const checkUsername = async () => {
@@ -124,6 +151,15 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
       setLoading(false);
       setOpen(false);
     }
+  };
+
+  const handleTestPayment = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!initialData.razorpayKeyId || !initialData.razorpayKeySecret) {
+      toast.error("Please add Razorpay credentials first");
+      return;
+    }
+    await testRazorpayConnection(params.storeId as string);
   };
 
   return (
@@ -280,9 +316,19 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
               )}
             />
           </div>
-          <Button disabled={loading} className='ml-auto' type='submit'>
-            Save changes
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              disabled={loading} 
+              variant="outline"
+              onClick={handleTestPayment}
+              className="flex items-center gap-2"
+            >
+              <span>Test Payment</span>
+            </Button>
+            <Button disabled={loading} type='submit'>
+              Save changes
+            </Button>
+          </div>
         </form>
       </Form>
       <Separator />
