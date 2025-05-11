@@ -36,8 +36,8 @@ model Customer {
   storeId         String
   store           Store     @relation("StoreToCustomer", fields: [storeId], references: [id])
   fullName        String
-  email           String    @default("")
-  phone           String
+  email           String    @unique
+  phone           String    @unique
   shippingAddress String    @db.Text
   orders          Order[]   @relation("CustomerToOrder")
   createdAt       DateTime  @default(now())

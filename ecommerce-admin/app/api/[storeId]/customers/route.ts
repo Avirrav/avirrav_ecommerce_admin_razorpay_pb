@@ -25,6 +25,10 @@ export async function POST(
       return new NextResponse("Phone is required", { status: 400 });
     }
 
+    if (!email) {
+      return new NextResponse("Email is required", { status: 400 });
+    }
+
     if (!shippingAddress) {
       return new NextResponse("Shipping address is required", { status: 400 });
     }
@@ -44,10 +48,25 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 405 });
     }
 
+    // Check if customer with same email or phone already exists
+    const existingCustomer = await prismadb.customer.findFirst({
+      where: {
+        OR: [
+          { email },
+          { phone }
+        ],
+        storeId: params.storeId
+      }
+    });
+
+    if (existingCustomer) {
+      return new NextResponse("Customer with this email or phone number already exists", { status: 400 });
+    }
+
     const customer = await prismadb.customer.create({
       data: {
         fullName,
-        email: email || "",
+        email,
         phone,
         shippingAddress,
         storeId: params.storeId,

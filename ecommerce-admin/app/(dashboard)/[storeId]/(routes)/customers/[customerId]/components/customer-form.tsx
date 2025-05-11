@@ -34,7 +34,7 @@ import {
 const formSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   phone: z.string().min(1, "Phone number is required"),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
   addressLine1: z.string().min(1, "Address Line 1 is required"),
   addressLine2: z.string().optional(),
   city: z.string().min(1, "City is required"),
@@ -215,7 +215,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({ initialData }) => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address (Optional)</FormLabel>
+                  <FormLabel>Email Address</FormLabel>
                   <FormControl>
                     <Input disabled={loading} placeholder="Email Address" {...field} />
                   </FormControl>
