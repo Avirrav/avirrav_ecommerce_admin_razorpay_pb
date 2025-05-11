@@ -14,6 +14,8 @@ model Store {
   userId          String
   username        String?   @unique
   apiUrl          String?
+  razorpayKeyId   String?   @db.Text
+  razorpayKeySecret String? @db.Text
   homeBillboardId String?
   homeBillboard   Billboard? @relation("StoreToHomeBillboard", fields: [homeBillboardId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   billboards      Billboard[] @relation("StoreToBillboard")

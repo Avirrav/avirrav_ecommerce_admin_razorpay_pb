@@ -40,6 +40,8 @@ const formSchema = z.object({
   username: z.string().min(1),
   apiUrl: z.string().min(1),
   homeBillboardId: z.string().optional(),
+  razorpayKeyId: z.string().optional(),
+  razorpayKeySecret: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof formSchema>;
@@ -60,6 +62,8 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
       username: initialData.username || '',
       apiUrl: initialData.apiUrl || '',
       homeBillboardId: initialData.homeBillboard?.id || undefined,
+      razorpayKeyId: initialData.razorpayKeyId || '',
+      razorpayKeySecret: initialData.razorpayKeySecret || '',
     },
   });
 
@@ -93,7 +97,11 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
   const onSubmit = async (data: SettingsFormValues) => {
     try {
       setLoading(true);
-      await axios.patch(`/api/stores/${params.storeId}`, data);
+      const formData = {
+        ...data,
+        razorpayKeySecret: data.razorpayKeySecret || undefined,
+      };
+      await axios.patch(`/api/stores/${params.storeId}`, formData);
       router.refresh();
       toast.success('Store updated.');
     } catch (error) {
@@ -232,6 +240,41 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='razorpayKeyId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Razorpay Key ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={loading}
+                      placeholder='Enter Razorpay Key ID'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='razorpayKeySecret'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Razorpay Key Secret</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={loading}
+                      type="password"
+                      placeholder='Enter Razorpay Key Secret'
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

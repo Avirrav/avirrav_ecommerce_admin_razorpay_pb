@@ -11,7 +11,7 @@ export async function PATCH(
     const { userId } = auth();
     const body = await req.json();
 
-    const { name, username, apiUrl, homeBillboardId } = body;
+    const { name, username, apiUrl, homeBillboardId, razorpayKeyId, razorpayKeySecret } = body;
 
     if (!userId) {
       return new NextResponse('Unauthenticated', { status: 403 });
@@ -51,6 +51,8 @@ export async function PATCH(
         username,
         apiUrl,
         homeBillboardId: homeBillboardId || null,
+        razorpayKeyId,
+        razorpayKeySecret,
       },
     });
 
