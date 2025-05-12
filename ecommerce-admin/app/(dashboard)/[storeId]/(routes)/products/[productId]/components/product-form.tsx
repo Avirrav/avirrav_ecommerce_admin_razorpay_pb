@@ -115,6 +115,7 @@ export const ProductForm = ({
           length: initialData?.length ? parseFloat(String(initialData.length)) : undefined,
           width: initialData?.width ? parseFloat(String(initialData.width)) : undefined,
           height: initialData?.height ? parseFloat(String(initialData.height)) : undefined,
+          weightUnit: initialData?.weightUnit || undefined,
         }
       : {
           name: '',

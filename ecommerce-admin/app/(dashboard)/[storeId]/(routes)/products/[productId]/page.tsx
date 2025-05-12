@@ -1,5 +1,6 @@
 import prismadb from '@/lib/prismadb';
 import { ProductForm } from './components/product-form';
+import { Product, Image } from '@prisma/client';
 
 const ProductPage = async ({
   params,
@@ -31,6 +32,28 @@ const ProductPage = async ({
     },
   });
 
+  // Convert Prisma Product with Decimal types to match the expected interface
+  const formattedProduct = product
+    ? {
+        ...product,
+        price: Number(product.price),
+        costPerItem: Number(product.costPerItem),
+        profitMargin: Number(product.profitMargin),
+        weight: product.weight ? Number(product.weight) : undefined,
+        length: product.length ? Number(product.length) : undefined,
+        width: product.width ? Number(product.width) : undefined,
+        height: product.height ? Number(product.height) : undefined,
+      } as unknown as (Product & {
+        images: Image[];
+        costPerItem?: number;
+        profitMargin?: number;
+        weight?: number;
+        length?: number;
+        width?: number;
+        height?: number;
+      })
+    : null;
+
   return (
     <div className='flex-col'>
       <div className='flex-1 space-y-4 p-8 pt-6'>
@@ -38,7 +61,7 @@ const ProductPage = async ({
           categories={categories}
           colors={colors}
           sizes={sizes}
-          initialData={product}
+          initialData={formattedProduct}
         />
       </div>
     </div>

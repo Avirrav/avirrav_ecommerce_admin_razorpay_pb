@@ -11,7 +11,11 @@ const OrderPage = async ({
       id: params.orderId
     },
     include: {
-      orderItems: true
+      orderItems: {
+        include: {
+          product: true
+        }
+      }
     }
   });
 

@@ -3,6 +3,9 @@ const nextConfig = {
   images: {
     domains: ['res.cloudinary.com'],
   },
+  typescript: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {

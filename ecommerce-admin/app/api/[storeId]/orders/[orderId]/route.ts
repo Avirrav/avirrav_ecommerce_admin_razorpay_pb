@@ -128,7 +128,7 @@ export async function PATCH(
                 id: productId
               }
             },
-            quantity
+            quantity: Number(quantity)
           }))
         }
       }
