@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Razorpay from 'razorpay';
 import prismadb from "@/lib/prismadb";
 
 const corsHeaders = {
@@ -11,11 +10,6 @@ const corsHeaders = {
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
 
 export async function POST(
   req: Request,
@@ -110,6 +104,18 @@ export async function POST(
       });
     }
 
+    // Initialize Razorpay here instead of at module load time
+    const key_id = process.env.RAZORPAY_KEY_ID;
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (!key_id || !key_secret) {
+      return new NextResponse("Razorpay credentials missing", { status: 500 });
+    }
+    
+    // Dynamic import to avoid loading during build time
+    const Razorpay = (await import('razorpay')).default;
+    const razorpay = new Razorpay({ key_id, key_secret });
+
     // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
       amount: amount,
@@ -123,7 +129,7 @@ export async function POST(
       const newOrder = await tx.order.create({
         data: {
           storeId: params.storeId,
-          customerId: customer.id,
+          customerId: customer?.id,
           isPaid: false,
           phone,
           email: email || '',
