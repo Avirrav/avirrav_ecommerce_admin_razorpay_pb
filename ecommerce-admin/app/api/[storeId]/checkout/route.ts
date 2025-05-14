@@ -63,23 +63,52 @@ export async function POST(
       }
     }
 
-    // Create customer record
-    const customer = await prismadb.customer.create({
-      data: {
+    // Check if customer exists
+    let customer = await prismadb.customer.findFirst({
+      where: {
         storeId: params.storeId,
-        fullName,
-        email: email || '',
-        phone,
-        shippingAddress: JSON.stringify({
-          addressLine1,
-          addressLine2,
-          city,
-          state,
-          postalCode,
-          country
-        })
-      },
+        email: email
+      }
     });
+
+    if (customer) {
+      // Update existing customer
+      customer = await prismadb.customer.update({
+        where: {
+          id: customer.id
+        },
+        data: {
+          fullName,
+          phone,
+          shippingAddress: JSON.stringify({
+            addressLine1,
+            addressLine2,
+            city,
+            state,
+            postalCode,
+            country
+          })
+        }
+      });
+    } else {
+      // Create new customer
+      customer = await prismadb.customer.create({
+        data: {
+          storeId: params.storeId,
+          fullName,
+          email: email || '',
+          phone,
+          shippingAddress: JSON.stringify({
+            addressLine1,
+            addressLine2,
+            city,
+            state,
+            postalCode,
+            country
+          })
+        },
+      });
+    }
 
     // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
@@ -87,7 +116,7 @@ export async function POST(
       currency: "INR",
       receipt: `order_${Date.now()}`,
     });
-
+    console.log('Razorpay Order Id:', razorpayOrder.id);
     // Create order and update stock quantities in a transaction
     const order = await prismadb.$transaction(async (tx) => {
       // Create the order
@@ -99,7 +128,7 @@ export async function POST(
           phone,
           email: email || '',
           address: addressLine1,
-          paymentId: razorpayOrder.id,
+          razorOrderId: razorpayOrder.id,
           orderItems: {
             create: productIds.map((productId: string) => ({
               product: {

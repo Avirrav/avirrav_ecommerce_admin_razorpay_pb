@@ -49,6 +49,7 @@ model Customer {
 model Order {
   id              String    @id @default(uuid())
   storeId         String    
+  razorOrderId    String?   @unique
   paymentId       String?   @unique 
   store           Store     @relation("StoreToOrder", fields: [storeId], references: [id])
   customerId      String?  

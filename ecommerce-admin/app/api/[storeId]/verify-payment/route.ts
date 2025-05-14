@@ -18,45 +18,62 @@ export async function POST(
 ) {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
-    console.log('Razorpay Order ID:', razorpay_order_id, 'Razorpay Payment ID:', razorpay_payment_id, 'Razorpay Signature:', razorpay_signature);
+    console.log('Payment Details:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
 
     if (!razorpay_signature) {
       return new NextResponse("Webhook signature missing", { status: 400 });
     }
 
     // Verify signature
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
     
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(body.toString())
+      .update(payload)
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
+    console.log('Signature Verification:', { expectedSignature, razorpay_signature, isAuthentic });
 
-    if (!isAuthentic) {
+    if (isAuthentic) { 
+      // First find the order using orderId
+      const existingOrder = await prismadb.order.findFirst({
+        where: {
+          razorOrderId: razorpay_order_id,
+          storeId: params.storeId
+        }
+      });
+
+      if (!existingOrder) {
+        console.log('Order not found:', razorpay_order_id);
+        return new NextResponse("Order not found", { status: 404 });
+      }
+
+      // Update order with payment details
+      const order = await prismadb.order.update({
+        where: {
+          id: existingOrder.id // Use the order's unique id
+        },
+        data: {
+          paymentId: razorpay_payment_id,
+          isPaid: true,
+          paymentStatus: 'paid',
+          orderStatus: 'confirmed'
+        },
+        include: {
+          orderItems: true
+        }
+      });
+
+      return NextResponse.json({ 
+        message: "Payment verified successfully",
+        order: order 
+      }, {
+        headers: corsHeaders
+      });
+    } else { 
       return new NextResponse("Invalid signature", { status: 400 });
     }
-
-    // Update order status
-    const order = await prismadb.order.update({
-      where: {
-      paymentId: razorpay_payment_id,
-      },
-      data: {
-      isPaid: true,
-      paymentStatus: 'paid',
-      orderStatus: 'confirmed'
-      },
-      include: {
-      orderItems: true,
-      },
-    });
-
-
-    return NextResponse.json({ message: "Payment verified successfully" }, {
-      headers: corsHeaders,
-    });
   } catch (error) {
     console.log('[VERIFY_PAYMENT_ERROR]', error);
     return new NextResponse("Internal error", { status: 500 });
