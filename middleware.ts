@@ -4,7 +4,8 @@ export default authMiddleware({
   publicRoutes: [
     '/api/:path*/checkout',
     '/api/:path*/verify-payment',
-    '/api/:path*'
+    '/api/:path*',
+    '/'
   ]
 });
 
