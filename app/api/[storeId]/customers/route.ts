@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs";
 
 import prismadb from "@/lib/prismadb";
+import toast from "react-hot-toast";
 
 export async function POST(
   req: Request,
@@ -48,19 +49,27 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 405 });
     }
 
-    // Check if customer with same email or phone already exists
+    // Check if customer exists with better error handling
     const existingCustomer = await prismadb.customer.findFirst({
       where: {
-        OR: [
-          { email },
-          { phone }
-        ],
-        storeId: params.storeId
+        email,
       }
     });
 
     if (existingCustomer) {
-      return new NextResponse("Customer with this email or phone number already exists", { status: 400 });
+      const conflictDetails = {
+        error: "Customer already exists",
+        code: "CUSTOMER_EXISTS",
+        details: {
+          email: existingCustomer.email === email ? "Email already registered" : null,
+        }
+      };
+      return new NextResponse(JSON.stringify(conflictDetails), {
+        status: 409,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
     }
 
     const customer = await prismadb.customer.create({
@@ -72,11 +81,26 @@ export async function POST(
         storeId: params.storeId,
       }
     });
-  
-    return NextResponse.json(customer);
+
+    return NextResponse.json({
+      success: true,
+      data: customer
+    });
+
   } catch (error) {
-    console.log('[CUSTOMERS_POST]', error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error('[CUSTOMERS_POST]', error);
+    const errorResponse = {
+      error: "Internal server error",
+      code: "INTERNAL_ERROR",
+      details: process.env.NODE_ENV === 'development' ? error : undefined
+    };
+
+    return new NextResponse(JSON.stringify(errorResponse), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }
 
@@ -86,7 +110,18 @@ export async function GET(
 ) {
   try {
     if (!params.storeId) {
-      return new NextResponse("Store id is required", { status: 400 });
+      return new NextResponse(
+        JSON.stringify({
+          error: "Store ID is required",
+          code: "MISSING_STORE_ID"
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
     }
 
     const customers = await prismadb.customer.findMany({
@@ -97,10 +132,26 @@ export async function GET(
         createdAt: 'desc'
       }
     });
-  
-    return NextResponse.json(customers);
+
+    return NextResponse.json({
+      success: true,
+      data: customers
+    });
+
   } catch (error) {
-    console.log('[CUSTOMERS_GET]', error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error('[CUSTOMERS_GET]', error);
+    return new NextResponse(
+      JSON.stringify({
+        error: "Internal server error",
+        code: "INTERNAL_ERROR",
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   }
 }

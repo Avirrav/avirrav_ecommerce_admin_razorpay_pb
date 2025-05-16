@@ -137,8 +137,29 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({ initialData }) => {
       router.refresh();
       router.push(`/${params.storeId}/customers`);
       toast.success(toastMessage);
-    } catch (error: any) {
-      toast.error('Something went wrong.');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          // Validation errors
+          toast.error(error.response.data || "Please check all required fields");
+        } else if (error.response?.status === 409) {
+          // Conflict error - Customer exists
+          const conflictDetails = error.response.data;
+          toast.error(conflictDetails.error || "Customer already exists");
+        } else if (error.response?.status === 403) {
+          // Authentication error
+          toast.error("You are not authorized to perform this action");
+        } else if (error.response?.data?.error) {
+          // Other API errors with error message
+          toast.error(error.response.data.error);
+        } else {
+          // Fallback error message
+          toast.error("Failed to create customer");
+        }
+      } else {
+        // Network or other errors
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }

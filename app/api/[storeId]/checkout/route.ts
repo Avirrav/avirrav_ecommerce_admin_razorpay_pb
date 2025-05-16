@@ -29,8 +29,10 @@ export async function POST(
       postalCode,
       country
     } = await req.json();
-
+    
     if (!productIds || productIds.length === 0) {
+      console.error('Product ids are required');
+
       return new NextResponse("Product ids are required", { status: 400 });
     }
 
@@ -57,120 +59,143 @@ export async function POST(
       }
     }
 
-    // Check if customer exists
-    let customer = await prismadb.customer.findFirst({
-      where: {
-        storeId: params.storeId,
-        email: email
-      }
-    });
-
-    if (customer) {
-      // Update existing customer
-      customer = await prismadb.customer.update({
+    // Wrap customer creation/update in try-catch
+    try {
+      // Check if customer exists using findUnique with composite key
+      let customer = await prismadb.customer.findUnique({
         where: {
-          id: customer.id
-        },
-        data: {
-          fullName,
-          phone,
-          shippingAddress: JSON.stringify({
-            addressLine1,
-            addressLine2,
-            city,
-            state,
-            postalCode,
-            country
-          })
+            storeId: params.storeId,
+            email: email || ''
         }
       });
-    } else {
-      // Create new customer
-      customer = await prismadb.customer.create({
-        data: {
-          storeId: params.storeId,
-          fullName,
-          email: email || '',
-          phone,
-          shippingAddress: JSON.stringify({
-            addressLine1,
-            addressLine2,
-            city,
-            state,
-            postalCode,
-            country
-          })
-        },
+      if (customer) {
+        // Update existing customer
+        customer = await prismadb.customer.update({
+          where : {
+              storeId: params.storeId,
+              email: email || ''
+          },
+          data: {
+            fullName,
+            phone,
+            shippingAddress: JSON.stringify({
+              addressLine1,
+              addressLine2,
+              city,
+              state,
+              postalCode,
+              country
+            })
+          }
+        });
+      } else {
+        // Create new customer with upsert to handle race conditions
+        customer = await prismadb.customer.upsert({
+          where:{
+              storeId: params.storeId,
+              email: email || ''
+          },
+          update: {
+            fullName,
+            phone,
+            shippingAddress: JSON.stringify({
+              addressLine1,
+              addressLine2,
+              city,
+              state,
+              postalCode,
+              country
+            })
+          },
+          create: {
+            storeId: params.storeId,
+            fullName,
+            email: email || '',
+            phone,
+            shippingAddress: JSON.stringify({
+              addressLine1,
+              addressLine2,
+              city,
+              state,
+              postalCode,
+              country
+            })
+          }
+        });
+      }
+
+      // Initialize Razorpay here instead of at module load time
+      const key_id = process.env.RAZORPAY_KEY_ID;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+      
+      if (!key_id || !key_secret) {
+        return new NextResponse("Razorpay credentials missing", { status: 500 });
+      }
+      
+      // Dynamic import to avoid loading during build time
+      const Razorpay = (await import('razorpay')).default;
+      const razorpay = new Razorpay({ key_id, key_secret });
+
+      // Create Razorpay order
+      const razorpayOrder = await razorpay.orders.create({
+        amount: amount,
+        currency: "INR",
+        receipt: `order_${Date.now()}`,
       });
-    }
+      console.log('Razorpay Order Id:', razorpayOrder.id);
+      // Create order and update stock quantities in a transaction
+      const order = await prismadb.$transaction(async (tx) => {
+        // Create the order
+        const newOrder = await tx.order.create({
+          data: {
+            storeId: params.storeId,
+            customerId: customer?.id,
+            isPaid: false,
+            phone,
+            email: email || '',
+            address: addressLine1,
+            razorOrderId: razorpayOrder.id,
+            orderItems: {
+              create: productIds.map((productId: string) => ({
+                product: {
+                  connect: {
+                    id: productId
+                  }
+                }
+              }))
+            },
+          },
+        });
 
-    // Initialize Razorpay here instead of at module load time
-    const key_id = process.env.RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
-    
-    if (!key_id || !key_secret) {
-      return new NextResponse("Razorpay credentials missing", { status: 500 });
-    }
-    
-    // Dynamic import to avoid loading during build time
-    const Razorpay = (await import('razorpay')).default;
-    const razorpay = new Razorpay({ key_id, key_secret });
-
-    // Create Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amount,
-      currency: "INR",
-      receipt: `order_${Date.now()}`,
-    });
-    console.log('Razorpay Order Id:', razorpayOrder.id);
-    // Create order and update stock quantities in a transaction
-    const order = await prismadb.$transaction(async (tx) => {
-      // Create the order
-      const newOrder = await tx.order.create({
-        data: {
-          storeId: params.storeId,
-          customerId: customer?.id,
-          isPaid: false,
-          phone,
-          email: email || '',
-          address: addressLine1,
-          razorOrderId: razorpayOrder.id,
-          orderItems: {
-            create: productIds.map((productId: string) => ({
-              product: {
-                connect: {
-                  id: productId
+        // Update stock quantities
+        for (const product of products) {
+          const quantityOrdered = productQuantityMap[product.id] || 0;
+          if (!product.sellWhenOutOfStock) {
+            await tx.product.update({
+              where: { id: product.id },
+              data: {
+                stockQuantity: {
+                  decrement: quantityOrdered
                 }
               }
-            }))
-          },
-        },
+            });
+          }
+        }
+
+        return newOrder;
       });
 
-      // Update stock quantities
-      for (const product of products) {
-        const quantityOrdered = productQuantityMap[product.id] || 0;
-        if (!product.sellWhenOutOfStock) {
-          await tx.product.update({
-            where: { id: product.id },
-            data: {
-              stockQuantity: {
-                decrement: quantityOrdered
-              }
-            }
-          });
-        }
-      }
+      return NextResponse.json(razorpayOrder, {
+        headers: corsHeaders
+      });
 
-      return newOrder;
-    });
-
-    return NextResponse.json(razorpayOrder, {
-      headers: corsHeaders
-    });
+    } catch (customerError) {
+      console.error('[CUSTOMER_ERROR]', customerError);
+      return new NextResponse("Error processing customer data", { status: 500 });
+    }
 
   } catch (error) {
-    console.log('[CHECKOUT_ERROR]', error);
+    console.error('[CHECKOUT_ERROR]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

@@ -81,16 +81,53 @@ export async function POST(
     // Create or get customer
     let finalCustomerId = customerId;
     if (customerType === 'guest' && fullName) {
-      const customer = await prismadb.customer.create({
-        data: {
-          storeId: params.storeId,
-          fullName,
-          email: email || '',
-          phone,
-          shippingAddress
+      try {
+        // First check if customer exists
+        const existingCustomer = await prismadb.customer.findFirst({
+          where: {
+            storeId: params.storeId,
+            email: email || ''
+          }
+        });
+
+        if (existingCustomer) {
+          // Update existing customer's information
+          const updatedCustomer = await prismadb.customer.update({
+            where: {
+              id: existingCustomer.id
+            },
+            data: {
+              fullName,
+              phone,
+              shippingAddress
+            }
+          });
+          finalCustomerId = updatedCustomer.id;
+        } else {
+          // Create new customer
+          const newCustomer = await prismadb.customer.create({
+            data: {
+              storeId: params.storeId,
+              fullName,
+              email: email || '',
+              phone,
+              shippingAddress
+            }
+          });
+          finalCustomerId = newCustomer.id;
         }
-      });
-      finalCustomerId = customer.id;
+      } catch (customerError) {
+        console.error('[CUSTOMER_ERROR]', customerError);
+        if ((customerError as any).code === 'P2002') {
+          return new NextResponse("Customer with this email already exists", { 
+            status: 409,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+        throw customerError; // Re-throw other errors
+      }
     }
 
     // Create the order and update stock quantities in a transaction
@@ -140,8 +177,19 @@ export async function POST(
   
     return NextResponse.json(order);
   } catch (error) {
-    console.log('[ORDERS_POST]', error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error('[ORDERS_POST]', error);
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      }), 
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   }
 }
 
