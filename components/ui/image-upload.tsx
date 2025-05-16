@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ImagePlus, Trash } from 'lucide-react';
+import IconButton from './icon-button';
 
 interface ImageUploadProps {
   disabled?: boolean;
@@ -36,21 +37,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div>
-      <div className='mb-4 flex items-center gap-4'>
+      <div className='mb-4 flex items-center gap-4 flex-wrap'>
         {value.map((url) => (
           <div
             key={url}
-            className='relative w-[200px] h-[200px] rounded-md overflow-hidden'
+            className='relative w-[200px] h-[200px] rounded-lg overflow-hidden border-2 border-black neo-shadow'
           >
             <div className='z-10 absolute top-2 right-2'>
-              <Button
-                type='button'
+              <IconButton
                 onClick={() => onRemove(url)}
-                variant='destructive'
-                size='sm'
-              >
-                <Trash className='h-4 w-4' />
-              </Button>
+                icon={<Trash className='h-4 w-4 text-primary' />}
+                className='bg-white hover:bg-destructive/20'
+              />
             </div>
             <Image fill className='object-cover' alt='Image' src={url} />
           </div>
@@ -64,10 +62,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <Button
               type='button'
               disabled={disabled}
-              variant='secondary'
+              variant='outline'
               onClick={onClick}
+              className='bg-accent/10 hover:bg-accent/20 border-2 border-black rounded-lg neo-shadow'
             >
-              <ImagePlus className='h-4 w-4 mr-2' />
+              <ImagePlus className='h-4 w-4 mr-2 text-primary' />
               Upload an Image
             </Button>
           );

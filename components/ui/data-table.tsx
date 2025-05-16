@@ -25,7 +25,6 @@ import {
 import { AlertModal } from '@/components/modals/alert-modal';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { set } from 'zod';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -67,7 +66,6 @@ export function DataTable<TData extends { id: string }, TValue>({
       const selectedRows = table.getSelectedRowModel().rows;
       const selectedIds = selectedRows.map(row => row.original.id);
 
-
       // Delete each selected item
       await Promise.all(
         selectedIds.map(id =>
@@ -96,26 +94,28 @@ export function DataTable<TData extends { id: string }, TValue>({
         loading={loading}
       />
       <div className='flex items-center justify-between py-4'>
+        <div className="w-full max-w-sm">
         <Input
           placeholder='Search...'
           value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn(searchKey)?.setFilterValue(event.target.value)
           }
-          className='max-w-sm'
+            className='font-medium'
         />
+        </div>
 
         {table.getSelectedRowModel().rows.length > 0 && (
           <Button
             variant="destructive"
-            size="sm"
             onClick={() => setOpen(true)}
+            className="ml-4"
           >
             Delete Selected ({table.getSelectedRowModel().rows.length})
           </Button>
         )}
       </div>
-      <div className='rounded-md border'>
+      <div className='rounded-lg border-2 border-black neo-shadow'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -170,7 +170,7 @@ export function DataTable<TData extends { id: string }, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length + 1}
-                  className='h-24 text-center'
+                  className='h-24 text-center font-bold'
                 >
                   No results.
                 </TableCell>
@@ -179,23 +179,27 @@ export function DataTable<TData extends { id: string }, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className='flex items-center justify-end space-x-2 py-4'>
+      <div className='flex items-center justify-between py-4 mt-4'>
+        <div className="font-bold text-sm">
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
+        </div>
+        <div className="space-x-2">
         <Button
-          variant='outline'
-          size='sm'
+            variant='accent'
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
         </Button>
         <Button
-          variant='outline'
-          size='sm'
+            variant='accent'
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
         </Button>
+        </div>
       </div>
     </div>
   );

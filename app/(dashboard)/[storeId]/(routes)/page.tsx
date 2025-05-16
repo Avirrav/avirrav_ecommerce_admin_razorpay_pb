@@ -58,6 +58,12 @@ const DashboardPage = async ({ params }: DashboardPageProps) => {
       storeId: params.storeId,
     },
   });
+  // Check if sizes exist
+  const sizes = await prismadb.size.findMany({
+    where: {
+      storeId: params.storeId,
+    },
+  });
   // Check if products exist
   const products = await prismadb.product.findMany({
     where: {
@@ -84,6 +90,11 @@ const DashboardPage = async ({ params }: DashboardPageProps) => {
       title: "Add Colors",
       description: "Define available colors for your products",
       completed: colors.length > 0
+    },
+    {
+      title: "Add Sizes",
+      description: "Define available sizes for your products",
+      completed: sizes.length > 0
     },
     {
       title: "Add Products",

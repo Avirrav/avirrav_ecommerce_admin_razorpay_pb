@@ -59,15 +59,15 @@ export function MainNav({
   ];
 
   return (
-    <div className={cn('flex items-center space-x-4 lg:space-x-6', className)}>
+    <div className={cn('flex items-center space-x-6 lg:space-x-8', className)}>
       {routes.map((route) => (
         <Link
           key={route.href}
           href={route.href}
           className={cn(
-            'text-sm font-medium transition-colors hover:text-primary',
+            'text-sm font-bold transition-colors relative py-2 hover:text-primary',
             route.active
-              ? 'text-black dark:text-white'
+              ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:bg-accent after:rounded-full'
               : 'text-muted-foreground'
           )}
         >

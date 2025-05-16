@@ -63,30 +63,36 @@ export default function StoreSwitcher({
           role='combobox'
           aria-expanded={open}
           aria-label='Select a store'
-          className={cn('w-[200px] justify-between', className)}
+          className={cn(
+            'w-[200px] justify-between rounded-lg border-2 border-black',
+            'neo-shadow hover:translate-y-[-2px] active:translate-y-[1px] transition-all duration-200',
+            className
+          )}
         >
-          <Store className='mr-2 h-4 w-4' />
-          {currentStore?.label}
-          <ChevronsUpDown className='ml-auto h-4 w-4 shrink-0 opacity-50' />
+          <Store className='mr-2 h-4 w-4 text-primary' />
+          <span className="font-medium truncate flex-1 text-left">
+            {currentStore?.label}
+          </span>
+          <ChevronsUpDown className='ml-auto h-4 w-4 shrink-0 text-primary/50' />
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-[200px] p-0'>
         <Command>
           <CommandList>
-            <CommandInput placeholder='Search store...' />
-            <CommandEmpty>No store found.</CommandEmpty>
-            <CommandGroup heading='Stores'>
+            <CommandInput placeholder='Search store...' className="font-medium" />
+            <CommandEmpty className="text-center py-3 text-sm">No store found.</CommandEmpty>
+            <CommandGroup heading='Stores' className="font-bold text-primary/80">
               {formattedItems.map((store) => (
                 <CommandItem
                   key={store.value}
                   onSelect={() => onStoreSelect(store)}
-                  className='text-sm'
+                  className='text-sm font-medium hover:bg-accent/10'
                 >
-                  <Store className='mr-2 h-4 w-4' />
+                  <Store className='mr-2 h-4 w-4 text-primary' />
                   {store.label}
                   <Check
                     className={cn(
-                      'ml-auto h-4 w-4',
+                      'ml-auto h-4 w-4 text-primary',
                       currentStore?.value === store.value
                         ? 'opacity-100'
                         : 'opacity-0'
@@ -104,8 +110,9 @@ export default function StoreSwitcher({
                   setOpen(false);
                   storeModal.onOpen();
                 }}
+                className="hover:bg-accent/10 font-bold"
               >
-                <PlusCircle className='mr-2 h-5 w-5' />
+                <PlusCircle className='mr-2 h-5 w-5 text-primary' />
                 Create Store
               </CommandItem>
             </CommandGroup>

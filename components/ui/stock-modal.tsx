@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ProductColumn } from '@/app/(dashboard)/[storeId]/(routes)/products/components/columns';
 import { CheckCircleIcon, ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface StockModalProps {
   isOpen: boolean;
@@ -42,7 +43,11 @@ const StockModal: React.FC<StockModalProps> = ({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full md:w-48 p-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 text-sm"
+            className={cn(
+              "w-full md:w-48 p-2 rounded-lg border-2 border-black",
+              "neo-shadow focus:outline-none focus:ring-2 focus:ring-primary",
+              "text-sm font-medium bg-background"
+            )}
           >
             <option value="all">All Products</option>
             <option value="inStock">In Stock</option>
@@ -50,32 +55,32 @@ const StockModal: React.FC<StockModalProps> = ({
             <option value="outOfStock">Out of Stock</option>
           </select>
         </div>
-        <div className="overflow-x-auto rounded-lg shadow-lg max-h-[80vh] md:max-h-[70vh] overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100 sticky top-0">
+        <div className="overflow-x-auto rounded-lg border-2 border-black neo-shadow max-h-[80vh] md:max-h-[70vh] overflow-y-auto">
+          <table className="min-w-full divide-y divide-primary/20">
+            <thead className="bg-accent/10 sticky top-0">
               <tr>
                 <th
                   scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
                 >
                   Product
                 </th>
                 <th
                   scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
                 >
                   Stock
                 </th>
                 <th
                   scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
                 >
                   Status
                 </th>
               </tr>
             </thead>
             <motion.tbody
-              className="bg-white divide-y divide-gray-200"
+              className="bg-background divide-y divide-primary/20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -86,12 +91,12 @@ const StockModal: React.FC<StockModalProps> = ({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="hover:bg-gray-50"
+                  className="hover:bg-accent/5"
                 >
-                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm font-medium text-gray-900">
+                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm font-medium text-foreground">
                     {product.name}
                   </td>
-                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm text-gray-500">
+                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm text-foreground">
                     {product.stockQuantity}
                   </td>
                   <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm">
@@ -122,7 +127,7 @@ const StockModal: React.FC<StockModalProps> = ({
             disabled={loading}
             variant="outline"
             onClick={onClose}
-            className="transition-transform transform hover:scale-105 text-sm md:text-base w-full md:w-auto"
+            className="rounded-lg border-2 border-black neo-shadow hover:translate-y-[-2px] active:translate-y-[1px] transition-all duration-200 text-sm md:text-base w-full md:w-auto"
           >
             Close
           </Button>

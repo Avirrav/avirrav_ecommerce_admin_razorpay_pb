@@ -28,24 +28,23 @@ export const ApiAlert = ({
 }: ApiAlertProps) => {
   const onCopy = () => {
     navigator.clipboard.writeText(description);
-    toast.success('Api route copied to clipboard');
+    toast.success('API route copied to clipboard');
   };
   return (
     <Alert>
-      {' '}
-      <Server className='h-4 w-4' />
+      <Server className='h-5 w-5' />
       <AlertTitle className='flex items-center gap-x-2'>
         {title}
         <Badge variant={variantMap[variant]}>{textMap[variant]}</Badge>
       </AlertTitle>
-      <AlertDescription className='mt-4 flex items-center sm:flex-row sm:justify-between'>
-        <div className='w-full sm:w-[50%] md:w-auto'>
-          <code className='relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono md:text-sm font-semibold text-xs'>
+      <AlertDescription className='mt-4 flex items-center justify-between gap-x-4'>
+        <div className='w-full'>
+          <code className='relative block border-2 border-black rounded-md bg-muted px-3 py-2 font-mono text-sm font-bold'>
             {description}
           </code>
         </div>
-        <Button variant={'outline'} size={'icon'} onClick={onCopy}>
-          <Copy className='h-4 w-4' />
+        <Button variant='outline' size='icon' onClick={onCopy} className="flex-shrink-0">
+          <Copy className='h-5 w-5' />
         </Button>
       </AlertDescription>
     </Alert>
