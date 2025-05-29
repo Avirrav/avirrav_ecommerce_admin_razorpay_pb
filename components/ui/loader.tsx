@@ -27,9 +27,9 @@ export const Loader = ({
   };
 
   return (
-    <div role="status" className={cn("animate-pulse relative", className)}>
+    <div role="status" className={cn("animate-spin relative", className)}>
       <div className={cn(
-        "border-[3px] rounded-md animate-spin",
+        "border-[3px] rounded-md",
         variantClasses[variant],
         "border-l-transparent border-r-transparent border-b-transparent",
         sizeClasses[size],

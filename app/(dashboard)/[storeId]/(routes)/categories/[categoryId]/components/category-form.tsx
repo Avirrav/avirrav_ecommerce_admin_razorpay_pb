@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
@@ -132,7 +133,6 @@ export const CategoryForm = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8 w-full'
         >
-          {' '}
           <div className='grid grid-cols-3 gap-8'>
             <FormField
               control={form.control}
@@ -140,6 +140,9 @@ export const CategoryForm = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
+                  <FormDescription>
+                    *Enter a descriptive name for your category.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
@@ -157,6 +160,9 @@ export const CategoryForm = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Billboard</FormLabel>
+                  <FormDescription>
+                    *Select a billboard to associate with this category. The billboard will be displayed when customers view product related to this category.
+                  </FormDescription>
                   <Select
                     disabled={loading}
                     onValueChange={field.onChange}
@@ -167,7 +173,7 @@ export const CategoryForm = ({
                       <SelectTrigger>
                         <SelectValue
                           defaultValue={field.value}
-                          placeholder='select a billboard'
+                          placeholder='Select a billboard'
                         />
                       </SelectTrigger>
                     </FormControl>

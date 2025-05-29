@@ -65,7 +65,7 @@ export const StoreModal = () => {
             <h3 className="font-bold text-primary">New Store Details</h3>
           </div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name='name'

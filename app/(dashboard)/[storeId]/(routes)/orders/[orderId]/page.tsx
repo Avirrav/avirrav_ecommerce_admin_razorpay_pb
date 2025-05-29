@@ -1,11 +1,17 @@
 import prismadb from '@/lib/prismadb';
 import { OrderForm } from './components/order-form';
+import { redirect } from 'next/navigation';
 
 const OrderPage = async ({
   params
 }: {
   params: { orderId: string, storeId: string }
 }) => {
+  // Redirect to orders page if trying to access "new" route
+  if (params.orderId === 'new') {
+    redirect(`/${params.storeId}/orders`);
+  }
+
   const order = await prismadb.order.findUnique({
     where: {
       id: params.orderId

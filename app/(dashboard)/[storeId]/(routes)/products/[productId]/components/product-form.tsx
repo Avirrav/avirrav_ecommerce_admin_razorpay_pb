@@ -9,24 +9,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useRouter } from 'next/navigation';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Heading } from '@/components/ui/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
@@ -34,6 +27,14 @@ import { AlertModal } from '@/components/modals/alert-modal';
 import ImageUpload from '@/components/ui/image-upload';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ProductDimensions } from '@/components/product-dimensions';
 
 interface Tax {
   name: string;
@@ -158,7 +159,6 @@ export const ProductForm = ({
     setTaxes(newTaxes);
   };
 
-  // Calculate total price when cost, profit margin or taxes change
   useEffect(() => {
     const costPerItem = Number(form.getValues('costPerItem')) || 0;
     const profitMargin = Number(form.getValues('profitMargin')) || 0;
@@ -205,13 +205,11 @@ export const ProductForm = ({
     try {
       setLoading(true);
       
-      // First check if the product has any orders
       const response = await axios.get(`/api/${params.storeId}/products/${params.productId}/check-orders`);
       const { hasOrders } = response.data;
 
       if (hasOrders) {
         toast.error('Cannot delete product with existing orders. Instead Archive the Product to hide it.');
-        
         return;
       }
 
@@ -258,37 +256,38 @@ export const ProductForm = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8 w-full'
         >
-          <FormField
-            control={form.control}
-            name='images'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Images</FormLabel>
-                <FormControl>
-                  <ImageUpload
-                    value={field.value.map((image) => image.url)}
-                    disabled={loading}
-                    onChange={(url) =>
-                      field.onChange([...field.value, { url }])
-                    }
-                    onRemove={(url) =>
-                      field.onChange([
-                        ...field.value.filter((current) => current.url !== url),
-                      ])
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className='grid grid-cols-3 gap-8'>
+          <div className='space-y-6'>
+            <FormField
+              control={form.control}
+              name='images'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Images<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Upload high-quality images that showcase your product. Add multiple images to show different angles and details.
+                  </FormDescription>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value.map((image) => image.url)}
+                      disabled={loading}
+                      onChange={(url) => field.onChange([...field.value, { url }])}
+                      onRemove={(url) => field.onChange([...field.value.filter((current) => current.url !== url)])}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Name<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Enter a clear and descriptive name for your product that customers will easily understand.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
@@ -300,12 +299,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Provide a detailed description of your product including key features and benefits.
+                  </FormDescription>
                   <FormControl>
                     <Textarea
                       disabled={loading}
@@ -317,12 +320,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='sku'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>SKU</FormLabel>
+                  <FormLabel>SKU<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Enter a unique Stock Keeping Unit (SKU) code for inventory tracking.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
@@ -334,12 +341,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='costPerItem'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cost Per Item</FormLabel>
+                  <FormLabel>Cost Per Item<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Enter the cost to acquire or produce one unit of this product.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       type='number'
@@ -352,12 +363,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='profitMargin'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profit Margin (%)</FormLabel>
+                  <FormLabel>Profit Margin (%)<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Set your desired profit margin as a percentage above the cost.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       type='number'
@@ -370,8 +385,12 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <div>
               <FormLabel>Custom Taxes</FormLabel>
+              <FormDescription>
+                Add any applicable taxes or additional charges as a percentage.
+              </FormDescription>
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <Input
@@ -410,12 +429,16 @@ export const ProductForm = ({
                 ))}
               </div>
             </div>
+
             <FormField
               control={form.control}
               name='price'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Total Price</FormLabel>
+                  <FormDescription>
+                    Final selling price calculated from cost, margin, and taxes.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       type='number'
@@ -427,12 +450,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='stockQuantity'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Stock Quantity</FormLabel>
+                  <FormLabel>Stock Quantity<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormDescription>
+                    Enter the current available quantity in stock.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       type='number'
@@ -444,12 +471,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='categoryId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Category*</FormLabel>
+                  <FormDescription>
+                    Select the category that best fits this product for better organization.
+                  </FormDescription>
                   <Select
                     disabled={loading}
                     onValueChange={field.onChange}
@@ -476,12 +507,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+            <ProductDimensions title="Product Characteristics*">
             <FormField
               control={form.control}
               name='sizeId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Size</FormLabel>
+                  <FormLabel>Size*</FormLabel>
+                  <FormDescription>
+                    Select a size variant for this product. If needed, create new sizes in the Size section. Choose a default value if none exists.
+                  </FormDescription>
                   <Select
                     disabled={loading}
                     onValueChange={field.onChange}
@@ -508,12 +543,16 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='colorId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Color</FormLabel>
+                  <FormLabel>Color*</FormLabel>
+                  <FormDescription>
+                    Select the color variant for this product. Add new colors in the Color section if needed. Choose a default value if none exists.
+                  </FormDescription>
                   <Select
                     disabled={loading}
                     onValueChange={field.onChange}
@@ -540,117 +579,135 @@ export const ProductForm = ({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name='weightUnit'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weight Unit</FormLabel>
-                  <Select
-                    disabled={loading}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder='Select unit'
+            </ProductDimensions>
+            <ProductDimensions title="Shipping & Dimensions">
+              <div className="space-y-6 p-4">
+                <FormField
+                  control={form.control}
+                  name='weightUnit'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weight Unit</FormLabel>
+                      <FormDescription>
+                        Choose the unit of measurement for the product&apos;s weight.
+                      </FormDescription>
+                      <Select
+                        disabled={loading}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="g">Grams (g)</SelectItem>
+                          <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                          <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                          <SelectItem value="oz">Ounces (oz)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='weight'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weight</FormLabel>
+                      <FormDescription>
+                        Enter the product&apos;s weight for shipping calculations.
+                      </FormDescription>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          disabled={loading}
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                         />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="g">Grams (g)</SelectItem>
-                      <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                      <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                      <SelectItem value="oz">Ounces (oz)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='weight'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weight</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      disabled={loading}
-                      {...field}
-                      value={field.value || ''}
-                      onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className='grid grid-cols-3 gap-8'>
-            <FormField
-              control={form.control}
-              name='length'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Length</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      disabled={loading}
-                      {...field}
-                      value={field.value || ''}
-                      onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='width'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Width</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      disabled={loading}
-                      {...field}
-                      value={field.value || ''}
-                      onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='height'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Height</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      disabled={loading}
-                      {...field}
-                      value={field.value || ''}
-                      onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className='grid grid-cols-3 gap-8'>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='length'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Length (cm)</FormLabel>
+                      <FormDescription>
+                        Product length in centimeters for shipping calculations.
+                      </FormDescription>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          disabled={loading}
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='width'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Width (cm)</FormLabel>
+                      <FormDescription>
+                        Product width in centimeters for shipping calculations.
+                      </FormDescription>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          disabled={loading}
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='height'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Height (cm)</FormLabel>
+                      <FormDescription>
+                        Product height in centimeters for shipping calculations.
+                      </FormDescription>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          disabled={loading}
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </ProductDimensions>
+
             <FormField
               control={form.control}
               name='isFeatured'
@@ -665,12 +722,13 @@ export const ProductForm = ({
                   <div className='space-y-1 leading-none'>
                     <FormLabel>Featured</FormLabel>
                     <FormDescription>
-                      Featured products will appear on the home page
+                      Featured products will appear on the home page for better visibility.
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='isArchived'
@@ -685,12 +743,13 @@ export const ProductForm = ({
                   <div className='space-y-1 leading-none'>
                     <FormLabel>Archived</FormLabel>
                     <FormDescription>
-                      Archived products will not appear in the store
+                      Archived products will be hidden from the store but remain in the database.
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='sellWhenOutOfStock'
@@ -705,12 +764,13 @@ export const ProductForm = ({
                   <div className='space-y-1 leading-none'>
                     <FormLabel>Continue selling when out of stock</FormLabel>
                     <FormDescription>
-                      Allow customers to purchase even when stock is 0
+                      Allow customers to place orders even when stock quantity reaches zero.
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='requiresShipping'
@@ -725,13 +785,14 @@ export const ProductForm = ({
                   <div className='space-y-1 leading-none'>
                     <FormLabel>Requires shipping</FormLabel>
                     <FormDescription>
-                      This product needs to be shipped
+                      Enable if this product needs to be physically shipped to customers.
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
           </div>
+
           <Button disabled={loading} className='ml-auto' type='submit'>
             {action}
           </Button>
@@ -740,3 +801,5 @@ export const ProductForm = ({
     </>
   );
 };
+
+export default ProductForm;

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { DataTable } from '@/components/ui/data-table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 import { BillboardColumn, columns } from './columns';
 import { ApiList } from '@/components/ui/api-list';
@@ -32,7 +34,12 @@ export const BillboardClient = ({ data }: BillboardClientProps) => {
           Add new
         </Button>
       </div>
-
+      <Alert className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          You can&apos;t delete billboard while it&apos;s still in use. Remove it from all assigned locations first.
+        </AlertDescription>
+      </Alert>
       <Separator />
       <DataTable 
         searchKey='label' 

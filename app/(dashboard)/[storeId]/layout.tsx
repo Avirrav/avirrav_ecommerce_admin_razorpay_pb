@@ -26,13 +26,14 @@ export default async function DashboardLayout({
   if (!store) {
     redirect('/');
   }
+
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="pt-16"> {/* Add padding to account for fixed navbar */}
+      <main className="flex-1 pt-16"> {/* Main content area with padding for navbar */}
         {children}
-      </div>
+      </main>
       <Footer />
-    </>
+    </div>
   );
 }

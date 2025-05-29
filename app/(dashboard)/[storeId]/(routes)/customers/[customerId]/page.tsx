@@ -1,16 +1,26 @@
+import { redirect } from 'next/navigation';
 import prismadb from "@/lib/prismadb";
-import { CustomerForm } from "./components/customer-form";
+import { CustomerForm } from './components/customer-form';
 
 const CustomerPage = async ({
   params
 }: {
-  params: { customerId: string }
+  params: { customerId: string, storeId: string }
 }) => {
+  // Redirect to customers page if trying to access "new" route
+  if (params.customerId === 'new') {
+    redirect(`/${params.storeId}/customers`);
+  }
+
   const customer = await prismadb.customer.findUnique({
     where: {
       id: params.customerId
     }
   });
+
+  if (!customer) {
+    redirect(`/${params.storeId}/customers`);
+  }
 
   return ( 
     <div className="flex-col">

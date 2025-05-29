@@ -41,26 +41,7 @@ export async function PATCH(
     const { userId } = auth();
     const body = await req.json();
 
-    const {
-      customerType,
-      customerId,
-      fullName,
-      email,
-      phone,
-      addressLine1,
-      addressLine2,
-      city,
-      state,
-      postalCode,
-      country,
-      productIds,
-      quantities,
-      paymentStatus,
-      paymentMethod,
-      totalPrice,
-      orderStatus,
-      isPaid
-    } = body;
+    const { paymentStatus, paymentMethod, orderStatus, isPaid } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 403 });
@@ -81,60 +62,20 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 405 });
     }
 
-    // Prepare the shipping address
-    const shippingAddress = JSON.stringify({
-      addressLine1,
-      addressLine2,
-      city,
-      state,
-      postalCode,
-      country
-    });
-
-    // Update or create customer if it's a guest
-    let finalCustomerId = customerId;
-    if (customerType === 'guest' && fullName) {
-      const customer = await prismadb.customer.create({
-        data: {
-          storeId: params.storeId,
-          fullName,
-          email: email || '',
-          phone,
-          shippingAddress
-        }
-      });
-      finalCustomerId = customer.id;
-    }
-
-    // Update the order
-    await prismadb.order.update({
+    // Update only mutable fields
+    const order = await prismadb.order.update({
       where: {
         id: params.orderId
       },
       data: {
-        customerId: finalCustomerId,
-        phone,
-        email,
-        address: addressLine1, // Store the primary address
         paymentStatus,
         paymentMethod,
         orderStatus,
-        isPaid,
-        orderItems: {
-          deleteMany: {},
-          create: Object.entries(quantities).map(([productId, quantity]) => ({
-            product: {
-              connect: {
-                id: productId
-              }
-            },
-            quantity: Number(quantity)
-          }))
-        }
+        isPaid
       }
     });
 
-    return NextResponse.json({ message: "Order updated successfully" });
+    return NextResponse.json(order);
   } catch (error) {
     console.log('[ORDER_PATCH]', error);
     return new NextResponse("Internal error", { status: 500 });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
+import Razorpay from "razorpay";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,8 +33,18 @@ export async function POST(
     
     if (!productIds || productIds.length === 0) {
       console.error('Product ids are required');
-
       return new NextResponse("Product ids are required", { status: 400 });
+    }
+
+    // Get store details including Razorpay credentials
+    const store = await prismadb.store.findFirst({
+      where: {
+        id: params.storeId
+      }
+    });
+
+    if (!store || !store.razorpayKeyId || !store.razorpayKeySecret) {
+      return new NextResponse("Store Razorpay credentials not found", { status: 400 });
     }
 
     // Check stock availability for all products
@@ -59,20 +70,24 @@ export async function POST(
       }
     }
 
+    // Initialize Razorpay with store credentials
+    const razorpay = new Razorpay({
+      key_id: store.razorpayKeyId,
+      key_secret: store.razorpayKeySecret
+    });
+
     // Wrap customer creation/update in try-catch
     try {
       // Check if customer exists using findUnique with composite key
       let customer = await prismadb.customer.findUnique({
         where: {
-            storeId: params.storeId,
-            email: email || ''
+          email: email || ''
         }
       });
       if (customer) {
         // Update existing customer
         customer = await prismadb.customer.update({
           where : {
-              storeId: params.storeId,
               email: email || ''
           },
           data: {
@@ -92,7 +107,6 @@ export async function POST(
         // Create new customer with upsert to handle race conditions
         customer = await prismadb.customer.upsert({
           where:{
-              storeId: params.storeId,
               email: email || ''
           },
           update: {
@@ -124,25 +138,13 @@ export async function POST(
         });
       }
 
-      // Initialize Razorpay here instead of at module load time
-      const key_id = process.env.RAZORPAY_KEY_ID;
-      const key_secret = process.env.RAZORPAY_KEY_SECRET;
-      
-      if (!key_id || !key_secret) {
-        return new NextResponse("Razorpay credentials missing", { status: 500 });
-      }
-      
-      // Dynamic import to avoid loading during build time
-      const Razorpay = (await import('razorpay')).default;
-      const razorpay = new Razorpay({ key_id, key_secret });
-
       // Create Razorpay order
       const razorpayOrder = await razorpay.orders.create({
         amount: amount,
         currency: "INR",
         receipt: `order_${Date.now()}`,
       });
-      console.log('Razorpay Order Id:', razorpayOrder.id);
+
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
         // Create the order

@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { ApiList } from '@/components/ui/api-list';
 
 import { SizeColumn, columns } from './columns';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SizesClientProps {
   data: SizeColumn[];
@@ -30,12 +31,17 @@ export const SizesClient = ({ data }: SizesClientProps) => {
           Add new
         </Button>
       </div>
-
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please add a default key in the configuration with the value 0 to ensure consistent fallback behavior.
+        </AlertDescription>
+      </Alert >
       <Separator />
-      <DataTable 
-        searchKey='name' 
-        columns={columns} 
-        data={data} 
+      <DataTable
+        searchKey='name'
+        columns={columns}
+        data={data}
         entityName="sizes"
         storeId={Array.isArray(params.storeId) ? params.storeId[0] : params.storeId}
       />

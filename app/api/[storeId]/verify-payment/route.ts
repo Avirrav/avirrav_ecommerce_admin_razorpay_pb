@@ -18,22 +18,30 @@ export async function POST(
 ) {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
-    console.log('Payment Details:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
 
     if (!razorpay_signature) {
       return new NextResponse("Webhook signature missing", { status: 400 });
+    }
+
+    // Get store details including Razorpay secret
+    const store = await prismadb.store.findFirst({
+      where: {
+        id: params.storeId
+      }
+    });
+    if (!store || !store.razorpayKeySecret) {
+      return new NextResponse("Store Razorpay credentials not found", { status: 400 });
     }
 
     // Verify signature
     const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
     
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac("sha256", store.razorpayKeySecret)
       .update(payload)
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
-    console.log('Signature Verification:', { expectedSignature, razorpay_signature, isAuthentic });
 
     if (isAuthentic) { 
       // First find the order using orderId
@@ -45,7 +53,6 @@ export async function POST(
       });
 
       if (!existingOrder) {
-        console.log('Order not found:', razorpay_order_id);
         return new NextResponse("Order not found", { status: 404 });
       }
 

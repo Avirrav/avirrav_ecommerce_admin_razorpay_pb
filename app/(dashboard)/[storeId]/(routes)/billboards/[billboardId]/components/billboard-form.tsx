@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
@@ -130,6 +131,10 @@ export const BillboardForm = ({ initialData }: BillboardFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Background image</FormLabel>
+                <FormDescription>
+                  *Upload a high-quality image that will be displayed as the billboard background.
+                  Recommended size: 1920x1080px or larger with a 16:9 aspect ratio.
+                </FormDescription>
                 <FormControl>
                   <ImageUpload
                     value={field.value ? [field.value] : []}
@@ -149,10 +154,14 @@ export const BillboardForm = ({ initialData }: BillboardFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Label</FormLabel>
+                  <FormDescription>
+                    *Enter a clear and concise text that will appear on the billboard.
+                    This could be a promotional message, category name, or any key information.
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder='Billboard label'
+                      placeholder='e.g., Summer Sale 2025'
                       {...field}
                     />
                   </FormControl>

@@ -19,10 +19,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import { AlertModal } from '@/components/modals/alert-modal';
+
 const formSchema = z.object({
   name: z.string().min(1),
   value: z.string().min(1),
@@ -123,6 +125,9 @@ export const SizeForm = ({ initialData }: SizeFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
+                  <FormDescription>
+                    Enter a display name for this size (e.g., &quot;Small&quot;, &quot;Medium&quot;, &quot;Large&quot;).
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
@@ -140,6 +145,9 @@ export const SizeForm = ({ initialData }: SizeFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Value</FormLabel>
+                  <FormDescription>
+                    Enter the actual size value (e.g., &quot;S&quot;, &quot;M&quot;, &quot;L&quot; or specific measurements).
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}

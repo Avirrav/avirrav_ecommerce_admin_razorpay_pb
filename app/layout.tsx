@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard',
+  title: 'Pugly Dashboard – Manage Boldly',
   description: 'Admin Dashboard',
 };
 
