@@ -5,30 +5,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center text-sm font-bold transition-all active:translate-y-1 active:translate-x-1 active:shadow-none border-2 border-black rounded-md neo-btn",
+  "inline-flex items-center justify-center text-body font-medium polaris-transition focus-visible:polaris-focus disabled:pointer-events-none disabled:opacity-50 border",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border-2 border-black bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "border-0 shadow-none hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline border-0 shadow-none",
-        accent: "bg-accent text-accent-foreground hover:bg-accent/80",
+        primary: "bg-primary text-primary-foreground border-primary hover:bg-primary/90 polaris-shadow-sm",
+        secondary: "bg-surface border-border text-foreground hover:bg-surface-hovered polaris-shadow-sm",
+        destructive: "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90 polaris-shadow-sm",
+        outline: "border-border bg-surface hover:bg-surface-hovered text-foreground polaris-shadow-sm",
+        ghost: "border-transparent hover:bg-surface-hovered text-foreground",
+        link: "text-interactive underline-offset-4 hover:underline border-transparent",
+        success: "bg-success text-white border-success hover:bg-success/90 polaris-shadow-sm",
+        warning: "bg-warning text-foreground border-warning hover:bg-warning/90 polaris-shadow-sm",
+        blue: "bg-interactive text-white border-interactive hover:bg-interactive-hovered polaris-shadow-sm",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8",
-        icon: "h-10 w-10",
+        sm: "h-8 px-3 text-body-sm rounded-md",
+        default: "h-9 px-4 py-2 rounded-md",
+        lg: "h-10 px-6 rounded-md",
+        icon: "h-9 w-9 rounded-md",
+        "icon-sm": "h-8 w-8 rounded-md",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }

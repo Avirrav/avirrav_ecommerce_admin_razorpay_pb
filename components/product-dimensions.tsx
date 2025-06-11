@@ -21,14 +21,14 @@ export const ProductDimensions = React.forwardRef<
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full flex items-center justify-between p-4 rounded-lg",
-          "border-2 border-black neo-shadow bg-accent/5",
-          "hover:bg-accent/10 transition-colors duration-200"
+          "border border-gray-200 shadow-sm bg-white",
+          "hover:bg-gray-50 transition-colors duration-200"
         )}
       >
-        <span className="font-bold text-primary">{title}</span>
+        <span className="font-semibold text-gray-900">{title}</span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-primary transition-transform duration-200",
+            "h-4 w-4 text-gray-600 transition-transform duration-200",
             isOpen && "transform rotate-180"
           )}
         />

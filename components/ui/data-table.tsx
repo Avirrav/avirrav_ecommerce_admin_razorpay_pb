@@ -101,7 +101,6 @@ export function DataTable<TData extends { id: string }, TValue>({
           onChange={(event) =>
             table.getColumn(searchKey)?.setFilterValue(event.target.value)
           }
-            className='font-medium'
         />
         </div>
 
@@ -115,7 +114,7 @@ export function DataTable<TData extends { id: string }, TValue>({
           </Button>
         )}
       </div>
-      <div className='rounded-lg border-2 border-black neo-shadow'>
+      <div className='rounded-lg border border-border polaris-shadow'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -170,7 +169,7 @@ export function DataTable<TData extends { id: string }, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length + 1}
-                  className='h-24 text-center font-bold'
+                  className='h-24 text-center font-medium'
                 >
                   No results.
                 </TableCell>
@@ -180,20 +179,22 @@ export function DataTable<TData extends { id: string }, TValue>({
         </Table>
       </div>
       <div className='flex items-center justify-between py-4 mt-4'>
-        <div className="font-bold text-sm">
+        <div className="font-medium text-body-sm text-muted-foreground">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>
         <div className="space-x-2">
         <Button
-            variant='accent'
+          variant='secondary'
+          size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
         </Button>
         <Button
-            variant='accent'
+          variant='secondary'
+          size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

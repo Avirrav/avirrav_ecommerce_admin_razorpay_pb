@@ -15,25 +15,24 @@ export const Loader = ({
 }: SpinnerProps) => {
   const sizeClasses = {
     small: 'h-4 w-4',
-    medium: 'h-8 w-8',
-    large: 'h-12 w-12'
+    medium: 'h-6 w-6',
+    large: 'h-8 w-8'
   };
 
   const variantClasses = {
     default: "border-t-primary",
     primary: "border-t-primary",
-    secondary: "border-t-blue-500",
-    accent: "border-t-yellow-500"
+    secondary: "border-t-secondary",
+    accent: "border-t-accent"
   };
 
   return (
     <div role="status" className={cn("animate-spin relative", className)}>
       <div className={cn(
-        "border-[3px] rounded-md",
+        "border-2 rounded-full",
         variantClasses[variant],
         "border-l-transparent border-r-transparent border-b-transparent",
-        sizeClasses[size],
-        "shadow-[2px_2px_0px_rgba(0,0,0,0.8)]"
+        sizeClasses[size]
       )} />
       <span className="sr-only">Loading...</span>
     </div>

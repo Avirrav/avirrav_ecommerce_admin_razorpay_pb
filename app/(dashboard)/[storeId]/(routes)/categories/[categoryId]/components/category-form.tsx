@@ -30,6 +30,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectEmpty,
 } from '@/components/ui/select';
 
 const formSchema = z.object({
@@ -133,20 +134,20 @@ export const CategoryForm = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8 w-full'
         >
-          <div className='grid grid-cols-3 gap-8'>
+          <div className='space-y-6 max-w-md'>
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Category Name <span className="text-red-500">*</span></FormLabel>
                   <FormDescription>
-                    *Enter a descriptive name for your category.
+                    Enter a descriptive name for your category. This will help customers find products easily. Examples: &quot;Electronics&quot;, &quot;Clothing&quot;, &quot;Home &amp; Garden&quot;
                   </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder='Category name'
+                      placeholder='e.g., Electronics, Clothing, Books'
                       {...field}
                     />
                   </FormControl>
@@ -159,9 +160,9 @@ export const CategoryForm = ({
               name='billboardId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Billboard</FormLabel>
+                  <FormLabel>Associated Billboard <span className="text-red-500">*</span></FormLabel>
                   <FormDescription>
-                    *Select a billboard to associate with this category. The billboard will be displayed when customers view product related to this category.
+                    Select a billboard to display when customers view this category. The billboard will showcase featured products or promotions related to this category.
                   </FormDescription>
                   <Select
                     disabled={loading}
@@ -173,16 +174,20 @@ export const CategoryForm = ({
                       <SelectTrigger>
                         <SelectValue
                           defaultValue={field.value}
-                          placeholder='Select a billboard'
+                          placeholder='Choose a billboard for this category'
                         />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {billboards.map((billboard) => (
-                        <SelectItem key={billboard.id} value={billboard.id}>
-                          {billboard.label}
-                        </SelectItem>
-                      ))}
+                      {billboards.length === 0 ? (
+                        <SelectEmpty>No billboards available. Create a billboard first.</SelectEmpty>
+                      ) : (
+                        billboards.map((billboard) => (
+                          <SelectItem key={billboard.id} value={billboard.id}>
+                            {billboard.label}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

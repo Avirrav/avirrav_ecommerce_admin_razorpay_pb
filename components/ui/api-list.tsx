@@ -17,10 +17,10 @@ export const ApiList = ({ entityName, entityIdName }: ApiListProps) => {
   const baseUrl = `${origin}/api/${params.storeId}`;
 
   return (
-    <div className="flex flex-col space-y-5 p-4 rounded-lg bg-muted/30 border-2 border-black neo-shadow">
-      <div className="flex items-center space-x-2 pb-2 border-b-2 border-primary/20">
-        <Code className="h-5 w-5 text-primary" />
-        <h3 className="font-bold text-lg">API Routes</h3>
+    <div className="flex flex-col space-y-4 p-4 rounded-lg bg-surface-subdued border border-border polaris-shadow">
+      <div className="flex items-center space-x-2 pb-2 border-b border-border">
+        <Code className="h-4 w-4 text-primary" />
+        <h3 className="font-medium text-heading">API Routes</h3>
       </div>
       
       <ApiAlert

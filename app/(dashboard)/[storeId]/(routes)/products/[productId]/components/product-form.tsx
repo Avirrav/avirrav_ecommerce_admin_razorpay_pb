@@ -33,6 +33,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectEmpty,
 } from '@/components/ui/select';
 import { ProductDimensions } from '@/components/product-dimensions';
 
@@ -159,20 +160,18 @@ export const ProductForm = ({
     setTaxes(newTaxes);
   };
 
+  const costPerItem = form.watch('costPerItem');
+  const profitMargin = form.watch('profitMargin');
+
   useEffect(() => {
-    const costPerItem = Number(form.getValues('costPerItem')) || 0;
-    const profitMargin = Number(form.getValues('profitMargin')) || 0;
-    
-    const profit = (costPerItem * profitMargin) / 100;
-    const basePrice = costPerItem + profit;
-    
+    const basePrice = Number(costPerItem) * (1 + Number(profitMargin) / 100);
     const totalTax = taxes.reduce((acc, tax) => {
       return acc + (basePrice * tax.value) / 100;
     }, 0);
 
     const totalPrice = Number((basePrice + totalTax).toFixed(2));
     form.setValue('price', totalPrice);
-  }, [form.watch('costPerItem'), form.watch('profitMargin'), taxes]);
+  }, [costPerItem, profitMargin, taxes, form]);
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
@@ -496,11 +495,15 @@ export const ProductForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {categories.length === 0 ? (
+                        <SelectEmpty>No categories available. Create a category first.</SelectEmpty>
+                      ) : (
+                        categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -532,11 +535,15 @@ export const ProductForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {sizes.map((size) => (
-                        <SelectItem key={size.id} value={size.id}>
-                          {size.name}
-                        </SelectItem>
-                      ))}
+                      {sizes.length === 0 ? (
+                        <SelectEmpty>No sizes available. Create a size first.</SelectEmpty>
+                      ) : (
+                        sizes.map((size) => (
+                          <SelectItem key={size.id} value={size.id}>
+                            {size.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -568,11 +575,15 @@ export const ProductForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {colors.map((color) => (
-                        <SelectItem key={color.id} value={color.id}>
-                          {color.name}
-                        </SelectItem>
-                      ))}
+                      {colors.length === 0 ? (
+                        <SelectEmpty>No colors available. Create a color first.</SelectEmpty>
+                      ) : (
+                        colors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            {color.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

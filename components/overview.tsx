@@ -1,7 +1,6 @@
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { cn } from '@/lib/utils';
 
 interface OverviewProps {
   data: any[];
@@ -9,43 +8,43 @@ interface OverviewProps {
 
 export const Overview = ({ data }: OverviewProps) => {
   return (
-    <div className="rounded-lg border-2 border-black p-4 neo-shadow">
+    <div className="rounded-lg border border-gray-200 p-4 shadow-sm bg-white">
       <ResponsiveContainer width='100%' height={350}>
         <BarChart data={data} margin={{ top: 20, right: 15, left: 5, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="5 5" stroke="#ccc" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis
             dataKey='name'
-            stroke='#000'
+            stroke='#6b7280'
             fontSize={12}
-            tickLine={true}
-            axisLine={{ strokeWidth: 2 }}
+            tickLine={false}
+            axisLine={false}
             tickMargin={8}
           />
           <YAxis
-            stroke='#000'
+            stroke='#6b7280'
             fontSize={12}
-            tickLine={true}
-            axisLine={{ strokeWidth: 2 }}
-            tickFormatter={(value: number) => `$${value}`}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value: number) => `₹${value}`}
             tickMargin={8}
           />
           <Tooltip 
             contentStyle={{
-              backgroundColor: 'white',
-              border: '2px solid black',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e5e7eb',
               borderRadius: '8px',
-              fontWeight: 'bold',
-              padding: '10px',
-              boxShadow: '4px 4px 0px rgba(0, 0, 0, 0.8)'
+              fontWeight: '500',
+              padding: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}
+            formatter={(value: number) => [`₹${value}`, 'Revenue']}
           />
           <Bar 
             dataKey='total' 
-            fill='#16a34a' 
-            radius={[8, 8, 0, 0]} 
-            strokeWidth={2}
-            stroke="#000"
-            barSize={40}
+            fill='#3b82f6' 
+            radius={[4, 4, 0, 0]} 
+            strokeWidth={0}
+            barSize={32}
           />
         </BarChart>
       </ResponsiveContainer>

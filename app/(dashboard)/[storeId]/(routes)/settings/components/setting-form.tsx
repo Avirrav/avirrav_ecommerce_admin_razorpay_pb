@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { AlertModal } from '@/components/modals/alert-modal';
 import { ApiAlert } from '@/components/ui/api-alert';
 import { useOrigin } from '@/hooks/user-origin';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectEmpty } from '@/components/ui/select';
 import { testRazorpayConnection } from './testing_razorpay_connection';
 
 interface SettingFormProps {
@@ -271,11 +271,15 @@ export const SettingForm = ({ initialData, billboards }: SettingFormProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {billboards.map((billboard) => (
-                        <SelectItem key={billboard.id} value={billboard.id}>
-                          {billboard.label}
-                        </SelectItem>
-                      ))}
+                      {billboards.length === 0 ? (
+                        <SelectEmpty>No billboards available. Create a billboard first.</SelectEmpty>
+                      ) : (
+                        billboards.map((billboard) => (
+                          <SelectItem key={billboard.id} value={billboard.id}>
+                            {billboard.label}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

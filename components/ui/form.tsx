@@ -93,7 +93,7 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive font-bold", className)}
+      className={cn(error && "text-destructive", "polaris-form-label", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -133,7 +133,7 @@ const FormDescription = React.forwardRef<
     <p
       ref={ref}
       id={formDescriptionId}
-      className={cn("text-sm text-primary/60 font-medium", className)}
+      className={cn("polaris-form-help", className)}
       {...props}
     />
   )
@@ -155,7 +155,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-bold text-destructive rounded-md px-2 py-1 bg-destructive/10 border-2 border-destructive/30", className)}
+      className={cn("polaris-form-error", className)}
       {...props}
     >
       {body}

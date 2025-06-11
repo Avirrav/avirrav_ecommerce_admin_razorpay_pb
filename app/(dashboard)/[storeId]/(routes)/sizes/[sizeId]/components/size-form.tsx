@@ -118,20 +118,20 @@ export const SizeForm = ({ initialData }: SizeFormProps) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8 w-full'
         >
-          <div className='grid grid-cols-3 gap-8'>
+          <div className='space-y-6 max-w-md'>
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Size Name <span className="text-red-500">*</span></FormLabel>
                   <FormDescription>
-                    Enter a display name for this size (e.g., &quot;Small&quot;, &quot;Medium&quot;, &quot;Large&quot;).
+                    Enter a descriptive name for this size that customers will easily understand. Examples: &quot;Small&quot;, &quot;Medium&quot;, &quot;Large&quot;, &quot;Extra Large&quot;
                   </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder='Size name'
+                      placeholder='e.g., Small, Medium, Large, XL'
                       {...field}
                     />
                   </FormControl>
@@ -144,14 +144,14 @@ export const SizeForm = ({ initialData }: SizeFormProps) => {
               name='value'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Value</FormLabel>
+                  <FormLabel>Size Value <span className="text-red-500">*</span></FormLabel>
                   <FormDescription>
-                    Enter the actual size value (e.g., &quot;S&quot;, &quot;M&quot;, &quot;L&quot; or specific measurements).
+                    Enter the actual size value or measurement. This can be abbreviations (S, M, L, XL) or specific measurements (32&quot;, 34&quot;, 36&quot;). Keep it consistent across your products.
                   </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder='Size value'
+                      placeholder='e.g., S, M, L, XL or 32&quot;, 34&quot;, 36&quot;'
                       {...field}
                     />
                   </FormControl>

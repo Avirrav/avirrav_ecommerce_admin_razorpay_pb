@@ -65,24 +65,24 @@ export function Sidebar() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant='ghost' size='icon' className='md:hidden'>
-          <Menu size={20} />
+        <Button variant='ghost' size='icon-sm' className='md:hidden'>
+          <Menu size={16} />
         </Button>
       </SheetTrigger>
-      <SheetContent className="border-l-2 border-black rounded-l-lg dark:border-white">
+      <SheetContent className="border-l border-border rounded-l-lg">
         <SheetHeader>
-          <SheetTitle className='flex justify-center font-bold border-b-2 border-primary pb-2'>ADMIN PANEL</SheetTitle>
+          <SheetTitle className='flex justify-center font-semibold border-b border-border pb-2'>ADMIN PANEL</SheetTitle>
         </SheetHeader>
         <div className='grid gap-4 justify-items-center py-6'>
-          <div className='grid grid-cols-1 gap-6'>
+          <div className='grid grid-cols-1 gap-4'>
             {routes.map((route) => (
               <Link
                 key={route.href}
                 href={route.href}
                 className={cn(
-                  'text-sm font-bold transition-colors hover:text-primary py-2 px-4 rounded-md',
+                  'text-body font-medium polaris-transition hover:text-primary py-2 px-4 rounded-md',
                   route.active
-                    ? 'text-accent-foreground bg-accent/20 border-2 border-black dark:border-white neo-shadow'
+                    ? 'text-primary bg-surface-pressed border border-border polaris-shadow-sm'
                     : 'text-muted-foreground'
                 )}
               >
@@ -90,7 +90,7 @@ export function Sidebar() {
               </Link>
             ))}
           </div>
-          <SheetFooter className="border-t-2 border-primary/20 mt-4 pt-4 w-full">
+          <SheetFooter className="border-t border-border mt-4 pt-4 w-full">
             <Footer />
           </SheetFooter>
         </div>

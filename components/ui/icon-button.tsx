@@ -19,9 +19,9 @@ const IconButton: React.FC<IconButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'rounded-lg flex items-center justify-center bg-background border-2 border-black p-2',
-        'neo-shadow hover:translate-y-[-2px] active:translate-y-[1px] transition-all duration-200',
-        'hover:bg-accent/20 disabled:opacity-50 disabled:pointer-events-none',
+        'rounded-md flex items-center justify-center bg-surface border border-border p-2',
+        'polaris-shadow hover:bg-surface-hovered polaris-transition',
+        'focus:polaris-focus disabled:opacity-50 disabled:pointer-events-none',
         className
       )}
     >

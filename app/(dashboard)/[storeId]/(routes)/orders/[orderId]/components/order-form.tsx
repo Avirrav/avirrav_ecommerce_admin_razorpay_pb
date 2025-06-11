@@ -29,6 +29,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectEmpty,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -346,11 +347,15 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.fullName}
-                          </SelectItem>
-                        ))}
+                        {customers.length === 0 ? (
+                          <SelectEmpty>No customers available. Create a customer first.</SelectEmpty>
+                        ) : (
+                          customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.fullName}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -568,11 +573,15 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name} - ${product.price.toString()}
-                        </SelectItem>
-                      ))}
+                      {products.length === 0 ? (
+                        <SelectEmpty>No products available. Create a product first.</SelectEmpty>
+                      ) : (
+                        products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name} - ${product.price.toString()}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <div className="mt-4 space-y-2">

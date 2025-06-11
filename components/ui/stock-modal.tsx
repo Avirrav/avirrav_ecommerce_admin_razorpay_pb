@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { ProductColumn } from '@/app/(dashboard)/[storeId]/(routes)/products/components/columns';
-import { CheckCircleIcon, ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+import { CheckCircle, AlertTriangle, XCircle, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StockModalProps {
@@ -31,103 +30,149 @@ const StockModal: React.FC<StockModalProps> = ({
     return true;
   });
 
+  const getStockStatus = (quantity: number) => {
+    if (quantity > 10) return { label: 'In Stock', color: 'text-green-700', bgColor: 'bg-green-50', icon: CheckCircle };
+    if (quantity > 0) return { label: 'Low Stock', color: 'text-yellow-700', bgColor: 'bg-yellow-50', icon: AlertTriangle };
+    return { label: 'Out of Stock', color: 'text-red-700', bgColor: 'bg-red-50', icon: XCircle };
+  };
+
+  const stockCounts = {
+    total: products.length,
+    inStock: products.filter(p => p.stockQuantity > 10).length,
+    lowStock: products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 10).length,
+    outOfStock: products.filter(p => p.stockQuantity === 0).length,
+  };
+
   return (
     <Modal
-      title="Stock Levels"
-      description="View and manage product stock levels"
+      title="Stock Management"
+      description="Monitor and manage your product inventory levels"
       isOpen={isOpen}
       onClose={onClose}
+      className="max-w-4xl"
     >
-      <div className="space-y-4 md:space-y-6 h-[60vh] md:h-[70vh] overflow-y-auto">
-        <div className="mb-4">
+      <div className="space-y-6">
+        {/* Stock Overview Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600">Total Products</p>
+                <p className="text-2xl font-bold text-blue-900">{stockCounts.total}</p>
+              </div>
+              <Package className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600">In Stock</p>
+                <p className="text-2xl font-bold text-green-900">{stockCounts.inStock}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-yellow-600">Low Stock</p>
+                <p className="text-2xl font-bold text-yellow-900">{stockCounts.lowStock}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-red-600">Out of Stock</p>
+                <p className="text-2xl font-bold text-red-900">{stockCounts.outOfStock}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Dropdown */}
+        <div className="flex justify-between items-center">
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className={cn(
-              "w-full md:w-48 p-2 rounded-lg border-2 border-black",
-              "neo-shadow focus:outline-none focus:ring-2 focus:ring-primary",
-              "text-sm font-medium bg-background"
-            )}
+            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="all">All Products</option>
-            <option value="inStock">In Stock</option>
-            <option value="lowStock">Low Stock</option>
-            <option value="outOfStock">Out of Stock</option>
+            <option value="all">All Products ({stockCounts.total})</option>
+            <option value="inStock">In Stock ({stockCounts.inStock})</option>
+            <option value="lowStock">Low Stock ({stockCounts.lowStock})</option>
+            <option value="outOfStock">Out of Stock ({stockCounts.outOfStock})</option>
           </select>
+          
+          <p className="text-sm text-gray-600">
+            Showing {filteredProducts.length} of {products.length} products
+          </p>
         </div>
-        <div className="overflow-x-auto rounded-lg border-2 border-black neo-shadow max-h-[80vh] md:max-h-[70vh] overflow-y-auto">
-          <table className="min-w-full divide-y divide-primary/20">
-            <thead className="bg-accent/10 sticky top-0">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
-                >
-                  Product
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
-                >
-                  Stock
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20"
-                >
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <motion.tbody
-              className="bg-background divide-y divide-primary/20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {filteredProducts.map((product) => (
-                <motion.tr
-                  key={product.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="hover:bg-accent/5"
-                >
-                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm font-medium text-foreground">
-                    {product.name}
-                  </td>
-                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm text-foreground">
-                    {product.stockQuantity}
-                  </td>
-                  <td className="px-3 md:px-6 py-2 md:py-4 text-xs md:text-sm">
-                    {product.stockQuantity > 10 ? (
-                      <div className="flex items-center space-x-1 md:space-x-2">
-                        <CheckCircleIcon className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
-                        <span className="text-green-700 font-semibold">In Stock</span>
-                      </div>
-                    ) : product.stockQuantity > 0 ? (
-                      <div className="flex items-center space-x-1 md:space-x-2">
-                        <ExclamationCircleIcon className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
-                        <span className="text-yellow-700 font-semibold">Low Stock</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-1 md:space-x-2">
-                        <XCircleIcon className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
-                        <span className="text-red-700 font-semibold">Out of Stock</span>
-                      </div>
-                    )}
-                  </td>
-                </motion.tr>
-              ))}
-            </motion.tbody>
-          </table>
+
+        {/* Products Table */}
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="max-h-96 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stock Quantity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.map((product) => {
+                  const status = getStockStatus(product.stockQuantity);
+                  const StatusIcon = status.icon;
+                  
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-medium">{product.stockQuantity}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={cn("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium", status.bgColor)}>
+                          <StatusIcon className="w-4 h-4 mr-1.5" />
+                          <span className={status.color}>{status.label}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  No products match the selected filter criteria.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="pt-4 md:pt-6 space-x-2 flex items-center justify-end w-full">
+
+        {/* Footer */}
+        <div className="flex justify-end">
           <Button
-            disabled={loading}
-            variant="outline"
             onClick={onClose}
-            className="rounded-lg border-2 border-black neo-shadow hover:translate-y-[-2px] active:translate-y-[1px] transition-all duration-200 text-sm md:text-base w-full md:w-auto"
+            variant="outline"
+            className="px-6"
           >
             Close
           </Button>

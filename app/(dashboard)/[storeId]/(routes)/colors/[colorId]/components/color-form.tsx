@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { Heading } from '@/components/ui/heading';
@@ -53,6 +54,7 @@ export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       name: '',
+      value: '',
     },
   });
 
@@ -119,17 +121,20 @@ export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8 w-full'
         >
-          <div className='md:grid md:grid-cols-3 gap-8'>
+          <div className='space-y-6 max-w-md'>
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Color Name <span className="text-red-500">*</span></FormLabel>
+                  <FormDescription>
+                    Enter a descriptive name for this color that customers will recognize. Examples: &quot;Red&quot;, &quot;Navy Blue&quot;, &quot;Forest Green&quot;, &quot;Sunset Orange&quot;
+                  </FormDescription>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder='Color name'
+                      placeholder='e.g., Red, Blue, Green, Black'
                       {...field}
                     />
                   </FormControl>
@@ -142,17 +147,21 @@ export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
               name='value'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Value</FormLabel>
+                  <FormLabel>Color Value (Hex Code) <span className="text-red-500">*</span></FormLabel>
+                  <FormDescription>
+                    Enter the hex color code starting with #. You can use color picker tools or websites like colorpicker.com to find the exact hex code. Examples: #FF0000 (red), #0000FF (blue)
+                  </FormDescription>
                   <FormControl>
                     <div className='flex items-center gap-x-4'>
                       <Input
                         disabled={loading}
-                        placeholder='Color value'
+                        placeholder='#FF0000'
                         {...field}
                       />
                       <div
-                        className='border p-4 rounded-full'
-                        style={{ backgroundColor: field.value }}
+                        className='border border-gray-300 p-4 rounded-lg min-w-[60px] h-[40px]'
+                        style={{ backgroundColor: field.value || '#ffffff' }}
+                        title={`Preview: ${field.value || 'No color selected'}`}
                       />
                     </div>
                   </FormControl>

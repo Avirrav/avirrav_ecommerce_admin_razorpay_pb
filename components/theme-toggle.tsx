@@ -20,38 +20,35 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant='outline' 
-          size='icon'
-          className={cn(
-            "rounded-lg border-2 border-black neo-shadow",
-            "hover:translate-y-[-2px] active:translate-y-[1px] transition-all duration-200"
-          )}
+          variant='ghost' 
+          size='icon-sm'
+          className="text-gray-300 hover:text-white hover:bg-gray-800 border-0"
         >
-          <Sun className='h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all text-primary dark:-rotate-90 dark:scale-0' />
-          <Moon className='absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all text-primary dark:rotate-0 dark:scale-100' />
+          <Sun className='h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
+          <Moon className='absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         <DropdownMenuItem 
           onClick={() => setTheme('light')} 
-          className={cn("hover:bg-accent/10 font-medium", theme === 'light' && "bg-accent/5")}
+          className={cn("hover:bg-surface-hovered", theme === 'light' && "bg-surface-pressed")}
         >
-          <Sun className="h-4 w-4 mr-2 text-primary" />
+          <Sun className="h-4 w-4 mr-2" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('dark')} 
-          className={cn("hover:bg-accent/10 font-medium", theme === 'dark' && "bg-accent/5")}
+          className={cn("hover:bg-surface-hovered", theme === 'dark' && "bg-surface-pressed")}
         >
-          <Moon className="h-4 w-4 mr-2 text-primary" />
+          <Moon className="h-4 w-4 mr-2" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('system')} 
-          className={cn("hover:bg-accent/10 font-medium", theme === 'system' && "bg-accent/5")}
+          className={cn("hover:bg-surface-hovered", theme === 'system' && "bg-surface-pressed")}
         >
-          <span className="mr-2 flex h-4 w-4 items-center justify-center text-primary text-xs">💻</span>
+          <span className="mr-2 flex h-4 w-4 items-center justify-center text-xs">💻</span>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
