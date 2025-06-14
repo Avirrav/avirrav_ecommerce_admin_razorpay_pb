@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
-import Razorpay from "razorpay";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +18,6 @@ export async function POST(
   try {
     const {
       productIds,
-      amount,
       fullName,
       email,
       phone,
@@ -30,7 +28,7 @@ export async function POST(
       postalCode,
       country
     } = await req.json();
-    
+
     if (!productIds || productIds.length === 0) {
       console.error('Product ids are required');
       return new NextResponse("Product ids are required", { status: 400 });
@@ -70,13 +68,6 @@ export async function POST(
       }
     }
 
-    // Initialize Razorpay with store credentials
-    const razorpay = new Razorpay({
-      key_id: store.razorpayKeyId,
-      key_secret: store.razorpayKeySecret
-    });
-
-    // Wrap customer creation/update in try-catch
     try {
       // Check if customer exists using findUnique with composite key
       let customer = await prismadb.customer.findUnique({
@@ -87,8 +78,8 @@ export async function POST(
       if (customer) {
         // Update existing customer
         customer = await prismadb.customer.update({
-          where : {
-              email: email || ''
+          where: {
+            email: email || ''
           },
           data: {
             fullName,
@@ -106,8 +97,8 @@ export async function POST(
       } else {
         // Create new customer with upsert to handle race conditions
         customer = await prismadb.customer.upsert({
-          where:{
-              email: email || ''
+          where: {
+            email: email || ''
           },
           update: {
             fullName,
@@ -138,12 +129,6 @@ export async function POST(
         });
       }
 
-      // Create Razorpay order
-      const razorpayOrder = await razorpay.orders.create({
-        amount: amount,
-        currency: "INR",
-        receipt: `order_${Date.now()}`,
-      });
 
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
@@ -152,11 +137,13 @@ export async function POST(
           data: {
             storeId: params.storeId,
             customerId: customer?.id,
-            isPaid: false,
+            isPaid: true,
             phone,
             email: email || '',
             address: addressLine1,
-            razorOrderId: razorpayOrder.id,
+            paymentMethod: 'CASH ON DELIVERY',
+            paymentStatus: 'PAID',
+            orderStatus: 'confirmed',
             orderItems: {
               create: productIds.map((productId: string) => ({
                 product: {
@@ -186,17 +173,20 @@ export async function POST(
         return newOrder;
       });
 
-      return NextResponse.json(razorpayOrder, {
+      return NextResponse.json({
+        orderId: order.id,
+        message: "Order placed successfully with Cash on Delivery"
+      }, {
+        status: 200,
         headers: corsHeaders
       });
 
-    } catch (customerError) {
-      console.error('[CUSTOMER_ERROR]', customerError);
-      return new NextResponse("Error processing customer data", { status: 500 });
+      } catch (error) {
+        console.log('[CHECKOUT_COD_ERROR]', error);
+        return new NextResponse("Internal error", { status: 500 });
+      }
+    } catch (error) {
+      console.log('[CHECKOUT_COD_ERROR]', error);
+      return new NextResponse("Internal error", { status: 500 });
     }
-
-  } catch (error) {
-    console.error('[CHECKOUT_ERROR]', error);
-    return new NextResponse("Internal error", { status: 500 });
   }
-}

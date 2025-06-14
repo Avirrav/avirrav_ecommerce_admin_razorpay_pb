@@ -24,18 +24,19 @@ const OrderPage = async ({
       }
     }
   });
-
+  console.log('order', order);
+  
   const products = await prismadb.product.findMany({
     where: {
       storeId: params.storeId,
     }
   });
 
-  const customers = await prismadb.customer.findMany({
+  const customers = order?.customerId ? await prismadb.customer.findMany({
     where: {
-      storeId: params.storeId,
+      id: order.customerId,
     }
-  });
+  }) : [];
 
   return ( 
     <div className="flex-col">

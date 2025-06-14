@@ -64,7 +64,8 @@ export async function POST(
         data: {
           paymentId: razorpay_payment_id,
           isPaid: true,
-          paymentStatus: 'paid',
+          paymentStatus: 'PAID',
+          paymentMethod: 'RAZORPAY',
           orderStatus: 'confirmed'
         },
         include: {

@@ -37,7 +37,7 @@ export default async function DashboardLayout({
 
   return (
     <MobileDetector stores={stores} storeId={params.storeId}>
-      <div className="h-screen flex flex-col bg-gray-900 overflow-hidden">
+      <div className="h-screen flex flex-col bg-[#1a1a1a] overflow-hidden">
         {/* Top Section - Fixed header */}
         <div className="h-14 flex-shrink-0 relative z-50">
           <TopBar stores={stores} />
@@ -46,22 +46,22 @@ export default async function DashboardLayout({
         {/* Bottom Section with curved border - White background */}
         <div className="flex-1 flex rounded-t-3xl bg-white shadow-lg relative overflow-hidden">
           {/* Left Sidebar - Hidden on mobile */}
-          <div className="hidden md:block w-56 flex-shrink-0 bg-white border-r border-gray-200 overflow-hidden">
-            <div className="h-full overflow-y-auto">
+          <div className="hidden md:block w-56 flex-shrink-0 overflow-hidden">
+            <div className="h-full overflow-y-auto theme-scrollbar">
               <AdminSidebar />
             </div>
           </div>
 
-          {/* Main Content - Scrollable area with proper text colors */}
-          <div className="flex-1 flex flex-col min-h-0 bg-white overflow-hidden">
-            <main className="flex-1 overflow-y-auto">
+          {/* Main Content - Scrollable area with proper text colors and themed scrollbar */}
+          <div className="flex-1 flex flex-col min-h-0 bg-[#f1f1f1] overflow-hidden">
+            <main className="flex-1 overflow-y-auto theme-scrollbar main-content-scroll">
               <div className="p-3 md:p-6">
                 <div className="max-w-full text-gray-900">
                   {children}
                 </div>
               </div>
               <div className="flex-shrink-0">
-                <Footer />
+                <Footer/>
               </div>
             </main>
           </div>

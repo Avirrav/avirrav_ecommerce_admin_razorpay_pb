@@ -145,27 +145,69 @@
     @apply transition-all duration-200 ease-in-out;
   }
 
-  /* Custom scrollbar for better UX */
-  .custom-scrollbar {
+  /* Theme-aware scrollbar styling */
+  .theme-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+    scrollbar-color: rgb(223, 227, 232) transparent; /* Light border color for track */
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+  .theme-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+  .theme-scrollbar::-webkit-scrollbar-track {
+    background: rgb(250, 251, 251); /* Very light surface color */
+    border-radius: 4px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(156, 163, 175, 0.5);
-    border-radius: 3px;
+  .theme-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(223, 227, 232); /* Light border color */
+    border-radius: 4px;
+    border: 2px solid rgb(250, 251, 251); /* Creates padding effect */
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(156, 163, 175, 0.7);
+  .theme-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(99, 115, 129); /* Muted text color on hover */
+  }
+
+  .theme-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: rgb(92, 106, 196); /* Primary color when active */
+  }
+
+  .theme-scrollbar::-webkit-scrollbar-corner {
+    background: rgb(250, 251, 251);
+  }
+
+  /* Dark theme scrollbar */
+  .dark .theme-scrollbar {
+    scrollbar-color: rgb(74, 85, 104) transparent;
+  }
+
+  .dark .theme-scrollbar::-webkit-scrollbar-track {
+    background: rgb(45, 55, 72);
+  }
+
+  .dark .theme-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(74, 85, 104);
+    border: 2px solid rgb(45, 55, 72);
+  }
+
+  .dark .theme-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(160, 174, 192);
+  }
+
+  .dark .theme-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: rgb(92, 106, 196);
+  }
+
+  .dark .theme-scrollbar::-webkit-scrollbar-corner {
+    background: rgb(45, 55, 72);
+  }
+
+  /* Apply theme scrollbar to main content areas */
+  .main-content-scroll {
+    @apply theme-scrollbar;
   }
 
   /* Ensure text visibility utilities */

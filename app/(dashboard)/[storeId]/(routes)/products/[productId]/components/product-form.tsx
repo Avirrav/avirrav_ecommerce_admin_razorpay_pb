@@ -261,7 +261,7 @@ export const ProductForm = ({
               name='images'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Images<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Product Images<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Upload high-quality images that showcase your product. Add multiple images to show different angles and details.
                   </FormDescription>
@@ -283,7 +283,7 @@ export const ProductForm = ({
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Name<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Enter a clear and descriptive name for your product that customers will easily understand.
                   </FormDescription>
@@ -304,7 +304,7 @@ export const ProductForm = ({
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Description<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Provide a detailed description of your product including key features and benefits.
                   </FormDescription>
@@ -325,7 +325,7 @@ export const ProductForm = ({
               name='sku'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>SKU<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>SKU<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Enter a unique Stock Keeping Unit (SKU) code for inventory tracking.
                   </FormDescription>
@@ -346,7 +346,7 @@ export const ProductForm = ({
               name='costPerItem'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cost Per Item<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Cost Per Item<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Enter the cost to acquire or produce one unit of this product.
                   </FormDescription>
@@ -368,7 +368,7 @@ export const ProductForm = ({
               name='profitMargin'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profit Margin (%)<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Profit Margin (%)<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Set your desired profit margin as a percentage above the cost.
                   </FormDescription>
@@ -455,7 +455,7 @@ export const ProductForm = ({
               name='stockQuantity'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Stock Quantity<span className='text-yellow-500'>*</span></FormLabel>
+                  <FormLabel>Stock Quantity<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Enter the current available quantity in stock.
                   </FormDescription>
@@ -476,7 +476,7 @@ export const ProductForm = ({
               name='categoryId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category*</FormLabel>
+                  <FormLabel>Category<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Select the category that best fits this product for better organization.
                   </FormDescription>
@@ -516,7 +516,7 @@ export const ProductForm = ({
               name='sizeId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Size*</FormLabel>
+                  <FormLabel>Size<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Select a size variant for this product. If needed, create new sizes in the Size section. Choose a default value if none exists.
                   </FormDescription>
@@ -556,7 +556,7 @@ export const ProductForm = ({
               name='colorId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Color*</FormLabel>
+                  <FormLabel>Color<span className='text-black'>*</span></FormLabel>
                   <FormDescription>
                     Select the color variant for this product. Add new colors in the Color section if needed. Choose a default value if none exists.
                   </FormDescription>
@@ -591,14 +591,14 @@ export const ProductForm = ({
               )}
             />
             </ProductDimensions>
-            <ProductDimensions title="Shipping & Dimensions">
+            <ProductDimensions title="Shipping & Dimensions*">
               <div className="space-y-6 p-4">
                 <FormField
                   control={form.control}
                   name='weightUnit'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Weight Unit</FormLabel>
+                      <FormLabel>Weight Unit<span className='text-black'>*</span></FormLabel>
                       <FormDescription>
                         Choose the unit of measurement for the product&apos;s weight.
                       </FormDescription>
@@ -630,7 +630,7 @@ export const ProductForm = ({
                   name='weight'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Weight</FormLabel>
+                      <FormLabel>Weight<span className='text-black'>*</span></FormLabel>
                       <FormDescription>
                         Enter the product&apos;s weight for shipping calculations.
                       </FormDescription>
@@ -653,7 +653,7 @@ export const ProductForm = ({
                   name='length'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length (cm)</FormLabel>
+                      <FormLabel>Length (cm)<span className='text-black'>*</span></FormLabel>
                       <FormDescription>
                         Product length in centimeters for shipping calculations.
                       </FormDescription>
@@ -676,7 +676,7 @@ export const ProductForm = ({
                   name='width'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Width (cm)</FormLabel>
+                      <FormLabel>Width (cm)<span className='text-black'>*</span></FormLabel>
                       <FormDescription>
                         Product width in centimeters for shipping calculations.
                       </FormDescription>
@@ -699,7 +699,7 @@ export const ProductForm = ({
                   name='height'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Height (cm)</FormLabel>
+                      <FormLabel>Height (cm)<span className='text-black'>*</span></FormLabel>
                       <FormDescription>
                         Product height in centimeters for shipping calculations.
                       </FormDescription>

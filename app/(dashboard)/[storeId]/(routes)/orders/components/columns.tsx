@@ -12,6 +12,7 @@ export type OrderColumn = {
   products: string;
   createdAt: string;
   paymentStatus: string;
+  paymentMethod: string;
   orderStatus: string;
 };
 
@@ -37,12 +38,17 @@ export const columns: ColumnDef<OrderColumn>[] = [
     header: 'Payment Status',
   },
   {
-    accessorKey: 'orderStatus',
-    header: 'Order Status',
+    accessorKey: 'paymentMethod',
+    header: 'Payment Method',
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.original.paymentMethod}
+      </div>
+    ),
   },
   {
-    accessorKey: 'isPaid',
-    header: 'Paid',
+    accessorKey: 'orderStatus',
+    header: 'Order Status',
   },
   {
     id: 'actions',

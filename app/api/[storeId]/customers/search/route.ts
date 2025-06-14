@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
-// /api/{storeId}/customers/search?email=customer@example.com
-export async function GET(
-  req: Request,
-  { params }: { params: { storeId: string } }
-) {
+
+// Global customer search endpoint - /api/customers/search?email=customer@example.com
+export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get('email');
     
-    if (!params.storeId) {
-      return new NextResponse("Store id is required", { status: 400 });
-    }
-
     if (!email) {
       return new NextResponse("Email is required", { status: 400 });
     }
 
+    // Search for customer globally across all stores
     const customer = await prismadb.customer.findFirst({
       where: {
         email: email,
-        storeId: params.storeId
+      },
+      include: {
+        store: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          }
+        }
       }
     });
 
@@ -30,7 +33,7 @@ export async function GET(
   
     return NextResponse.json(customer);
   } catch (error) {
-    console.log('[CUSTOMER_GET_BY_EMAIL]', error);
+    console.log('[GLOBAL_CUSTOMER_SEARCH]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

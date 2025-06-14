@@ -21,7 +21,7 @@ interface TopBarProps {
 
 export const TopBar = ({ stores }: TopBarProps) => {
   return (
-    <div className="h-14 bg-gray-900 flex items-center px-4 md:px-6">
+    <div className="h-14 bg-[#1a1a1a] flex items-center px-4 md:px-6">
       {/* Mobile Menu Button */}
       <div className="md:hidden mr-3">
         <Sheet>

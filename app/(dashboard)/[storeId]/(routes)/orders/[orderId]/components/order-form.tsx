@@ -47,10 +47,7 @@ const formSchema = z.object({
   country: z.string().min(1, "Country is required"),
   productIds: z.array(z.string()).min(1, "At least one product must be selected"),
   quantities: z.record(z.string(), z.number().min(1)),
-  paymentStatus: z.enum(['paid', 'pending', 'partial']),
-  paymentMethod: z.enum(['cash', 'credit_card', 'upi', 'bank_transfer', 'other']),
   orderStatus: z.enum(['draft', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned']),
-  isPaid: z.boolean().default(false),
 });
 
 type OrderFormValues = z.infer<typeof formSchema>;
@@ -64,20 +61,6 @@ interface OrderFormProps {
   products: Product[];
   customers: Customer[];
 }
-
-const PAYMENT_STATUSES = [
-  { label: 'Paid', value: 'paid' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Partial', value: 'partial' },
-];
-
-const PAYMENT_METHODS = [
-  { label: 'Cash', value: 'cash' },
-  { label: 'Credit Card', value: 'credit_card' },
-  { label: 'UPI', value: 'upi' },
-  { label: 'Bank Transfer', value: 'bank_transfer' },
-  { label: 'Other', value: 'other' },
-];
 
 const ORDER_STATUSES = [
   { label: 'Draft', value: 'draft' },
@@ -118,8 +101,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({
   const getInitialValues = () => {
     if (initialData) {
       const customerData = initialData.customerId ? customers.find(c => c.id === initialData.customerId) : null;
-      let address = { addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'United States' };
-      
+      let address = { addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India' };
+
       if (customerData?.shippingAddress) {
         try {
           address = JSON.parse(customerData.shippingAddress);
@@ -144,13 +127,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
         city: address.city || '',
         state: address.state || '',
         postalCode: address.postalCode || '',
-        country: address.country || 'United States',
+        country: address.country || 'India',
         productIds: initialData.orderItems.map(item => item.productId),
         quantities,
-        paymentStatus: initialData.paymentStatus as any,
-        paymentMethod: initialData.paymentMethod as any,
         orderStatus: initialData.orderStatus as any,
-        isPaid: initialData.isPaid
       };
     }
 
@@ -167,10 +147,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
       country: 'United States',
       productIds: [],
       quantities: {},
-      paymentStatus: 'pending' as const,
-      paymentMethod: 'cash' as const,
       orderStatus: 'draft' as const,
-      isPaid: false
     };
   };
 
@@ -179,31 +156,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
     defaultValues: getInitialValues()
   });
 
-  // Watch isPaid value and update payment status accordingly
-  const isPaid = form.watch('isPaid');
-  useEffect(() => {
-    if (!isPaid && form.getValues('paymentStatus') === 'paid') {
-      form.setValue('paymentStatus', 'pending');
-    } else if (isPaid && form.getValues('paymentStatus') === 'pending') {
-      form.setValue('paymentStatus', 'paid');
-    }
-  }, [isPaid, form]);
-
-  // Watch payment status and update isPaid accordingly
-  const paymentStatus = form.watch('paymentStatus');
-  useEffect(() => {
-    if (paymentStatus === 'paid') {
-      form.setValue('isPaid', true);
-    } else if (paymentStatus === 'pending') {
-      form.setValue('isPaid', false);
-    }
-  }, [paymentStatus, form]);
-
   // Calculate total price based on selected products and quantities
   const calculateTotalPrice = () => {
     const selectedProducts = form.watch('productIds');
     const quantities = form.watch('quantities');
-    
+
     return selectedProducts.reduce((total, productId) => {
       const product = products.find(p => p.id === productId);
       const quantity = quantities[productId] || 0;
@@ -214,40 +171,42 @@ export const OrderForm: React.FC<OrderFormProps> = ({
   const onSubmit = async (data: OrderFormValues) => {
     try {
       setLoading(true);
-      
-      // Prepare the shipping address
-      const shippingAddress = JSON.stringify({
-        addressLine1: data.addressLine1,
-        addressLine2: data.addressLine2,
-        city: data.city,
-        state: data.state,
-        postalCode: data.postalCode,
-        country: data.country
-      });
-
-      const totalPrice = calculateTotalPrice();
-
-      // When updating an order, only send mutable fields
-      const submitData = initialData ? {
-        paymentStatus: data.paymentStatus,
-        paymentMethod: data.paymentMethod,
-        orderStatus: data.orderStatus,
-        isPaid: data.isPaid
-      } : {
-        ...data,
-        shippingAddress,
-        totalPrice,
-        phone: data.phone,
-        email: data.email || '',
-        address: data.addressLine1,
-      };
 
       if (initialData) {
+        // When updating an order, only send the order status
+        const submitData = {
+          orderStatus: data.orderStatus
+        };
+
         await axios.patch(`/api/${params.storeId}/orders/${params.orderId}`, submitData);
       } else {
+        // For new orders, include all data with default payment values
+        const shippingAddress = JSON.stringify({
+          addressLine1: data.addressLine1,
+          addressLine2: data.addressLine2,
+          city: data.city,
+          state: data.state,
+          postalCode: data.postalCode,
+          country: data.country
+        });
+
+        const totalPrice = calculateTotalPrice();
+
+        const submitData = {
+          ...data,
+          shippingAddress,
+          totalPrice,
+          phone: data.phone,
+          email: data.email || '',
+          address: data.addressLine1,
+          paymentStatus: 'PENDING', // Default value for new orders
+          paymentMethod: 'PENDING', // Default value for new orders
+          isPaid: false, // Default value for new orders
+        };
+
         await axios.post(`/api/${params.storeId}/orders`, submitData);
       }
-      
+
       router.refresh();
       router.push(`/${params.storeId}/orders`);
       toast.success(toastMessage);
@@ -276,8 +235,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({
 
   return (
     <>
-      <AlertModal 
-        isOpen={open} 
+      <AlertModal
+        isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={onDelete}
         loading={loading}
@@ -374,10 +333,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                     <FormItem>
                       <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          disabled={loading || !!initialData} 
-                          placeholder="Customer's full name" 
-                          {...field} 
+                        <Input
+                          disabled={loading || !!initialData}
+                          placeholder="Customer's full name"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -391,11 +350,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                     <FormItem>
                       <FormLabel>Email (Optional)</FormLabel>
                       <FormControl>
-                        <Input 
-                          disabled={loading || !!initialData} 
-                          placeholder="Email address" 
+                        <Input
+                          disabled={loading || !!initialData}
+                          placeholder="Email address"
                           type="email"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -413,10 +372,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="Phone number" 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="Phone number"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -429,12 +388,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               name="addressLine1"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address Line 1</FormLabel>
+                  <FormLabel>Street Address</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="Street address" 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="Street address"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -447,12 +406,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               name="addressLine2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address Line 2 (Optional)</FormLabel>
+                  <FormLabel>Landmark</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="Apartment, suite, etc." 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="Apartment, suite, etc."
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -467,10 +426,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                 <FormItem>
                   <FormLabel>City</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="City" 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="City"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -485,10 +444,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                 <FormItem>
                   <FormLabel>State/Province</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="State or province" 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="State or province"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -503,10 +462,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                 <FormItem>
                   <FormLabel>Postal/ZIP Code</FormLabel>
                   <FormControl>
-                    <Input 
-                      disabled={loading || !!initialData} 
-                      placeholder="Postal or ZIP code" 
-                      {...field} 
+                    <Input
+                      disabled={loading || !!initialData}
+                      placeholder="Postal or ZIP code"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -559,7 +518,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                         ? currentIds.filter(id => id !== value)
                         : [...currentIds, value];
                       field.onChange(newIds);
-                      
+
                       // Initialize quantity if not exists
                       if (!currentIds.includes(value)) {
                         form.setValue(`quantities.${value}`, 1);
@@ -621,67 +580,27 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               )}
             />
 
-            {/* Payment Details - Editable */}
-            <FormField
-              control={form.control}
-              name="paymentStatus"
-              render={({ field }) => (
-                <FormItem>
+
+            {/* Read-only Payment Information Display for existing orders */}
+            {initialData && (
+              <>
+                <div className="space-y-2">
                   <FormLabel>Payment Status</FormLabel>
-                  <Select
-                    disabled={loading}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PAYMENT_STATUSES.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <div className="flex h-9 w-full items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                    {initialData.paymentStatus}
+                  </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
+                <div className="space-y-2">
                   <FormLabel>Payment Method</FormLabel>
-                  <Select
-                    disabled={loading}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map((method) => (
-                        <SelectItem key={method.value} value={method.value}>
-                          {method.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <div className="flex h-9 w-full items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                    {initialData.paymentMethod}
+                  </div>
+                </div>
+              </>
+            )}
 
+            {/* Order Status - Only editable field when editing */}
             <FormField
               control={form.control}
               name="orderStatus"
@@ -712,30 +631,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="isPaid"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Mark as Paid
-                    </FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <div className="flex items-center space-x-2">
-              <FormLabel>Total Price:</FormLabel>
-              <span className="text-lg font-bold">${calculateTotalPrice().toFixed(2)}</span>
-            </div>
+            {!initialData && (
+              <div className="flex items-center space-x-2">
+                <FormLabel>Total Price:</FormLabel>
+                <span className="text-lg font-bold">${calculateTotalPrice().toFixed(2)}</span>
+              </div>
+            )}
           </div>
           <Button disabled={loading} className="ml-auto" type="submit">
             {action}
