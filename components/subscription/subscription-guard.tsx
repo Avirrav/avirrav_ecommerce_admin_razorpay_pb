@@ -11,6 +11,18 @@ interface SubscriptionGuardProps {
   currentCount?: number;
 }
 
+interface PlanDetails {
+  planName?: string;
+  subscriptionEndDate?: string;
+  storesAllowed?: number;
+  productsAllowed?: number;
+}
+
+interface UserMetadata {
+  isSubscribed?: boolean;
+  planDetails?: PlanDetails;
+}
+
 export const SubscriptionGuard = ({ 
   children, 
   requiredFeature,
@@ -18,12 +30,12 @@ export const SubscriptionGuard = ({
 }: SubscriptionGuardProps) => {
   const { user, isLoaded } = useUser();
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [planDetails, setPlanDetails] = useState<any>(null);
+  const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isLoaded && user) {
-      const metadata = user.publicMetadata;
+      const metadata = user.publicMetadata as UserMetadata;
       const subscribed = metadata?.isSubscribed || false;
       const details = metadata?.planDetails || null;
       
@@ -47,7 +59,7 @@ export const SubscriptionGuard = ({
       <div className="h-full w-full flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-2">
           <Loader size="large" />
-          <p className="text-muted-foreground animate-pulse">Loading subscription...</p>
+          <p className="text-muted-foreground animate-pulse">Loading...</p>
         </div>
       </div>
     );
@@ -62,11 +74,11 @@ export const SubscriptionGuard = ({
   if (requiredFeature && planDetails) {
     const { storesAllowed, productsAllowed } = planDetails;
     
-    if (requiredFeature === 'store' && storesAllowed !== -1 && currentCount >= storesAllowed) {
+    if (requiredFeature === 'store' && storesAllowed !== undefined && storesAllowed !== -1 && currentCount >= storesAllowed) {
       return <SubscriptionUpgrade message="You've reached your store limit. Upgrade to create more stores." />;
     }
     
-    if (requiredFeature === 'product' && productsAllowed !== -1 && currentCount >= productsAllowed) {
+    if (requiredFeature === 'product' && productsAllowed !== undefined && productsAllowed !== -1 && currentCount >= productsAllowed) {
       return <SubscriptionUpgrade message="You've reached your product limit. Upgrade to add more products." />;
     }
   }
