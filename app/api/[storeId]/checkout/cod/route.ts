@@ -187,7 +187,7 @@ export async function POST(
       });
 
       return NextResponse.json({
-        orderId: order.id,
+        orderId: order.razorOrderId,
         message: "Order placed successfully with Cash on Delivery"
       }, {
         status: 200,
