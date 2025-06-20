@@ -140,7 +140,7 @@ export async function POST(
       }
 
       // Generate a random string for COD order ID
-      const razorOrderId = `COD-${generateRandomString(10)}`;
+      const razorOrderId = `cod_${generateRandomString(14)}`;
 
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
