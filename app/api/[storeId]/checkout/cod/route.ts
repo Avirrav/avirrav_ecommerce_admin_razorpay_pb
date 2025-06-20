@@ -11,6 +11,16 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// Generate a random string for COD order ID
+function generateRandomString(length: number) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export async function POST(
   req: Request,
   { params }: { params: { storeId: string } }
@@ -129,6 +139,8 @@ export async function POST(
         });
       }
 
+      // Generate a random string for COD order ID
+      const razorOrderId = `COD-${generateRandomString(10)}`;
 
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
@@ -144,6 +156,7 @@ export async function POST(
             paymentMethod: 'CASH ON DELIVERY',
             paymentStatus: 'PAID',
             orderStatus: 'confirmed',
+            razorOrderId,
             orderItems: {
               create: productIds.map((productId: string) => ({
                 product: {
