@@ -2,6 +2,7 @@ import Footer from '@/components/footer';
 import { TopBar } from '@/components/top-bar';
 import { AdminSidebar } from '@/components/admin-sidebar';
 import { MobileDetector } from '@/components/mobile/mobile-detector';
+import { SubscriptionGuard } from '@/components/subscription/subscription-guard';
 import prismadb from '@/lib/prismadb';
 import { auth } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
@@ -36,37 +37,39 @@ export default async function DashboardLayout({
   });
 
   return (
-    <MobileDetector stores={stores} storeId={params.storeId}>
-      <div className="h-screen flex flex-col bg-[#1a1a1a] overflow-hidden">
-        {/* Top Section - Fixed header */}
-        <div className="h-14 flex-shrink-0 relative z-50">
-          <TopBar stores={stores} />
-        </div>
+    <SubscriptionGuard>
+      <MobileDetector stores={stores} storeId={params.storeId}>
+        <div className="h-screen flex flex-col bg-[#1a1a1a] overflow-hidden">
+          {/* Top Section - Fixed header */}
+          <div className="h-14 flex-shrink-0 relative z-50">
+            <TopBar stores={stores} />
+          </div>
 
-        {/* Bottom Section with curved border - White background */}
-        <div className="flex-1 flex rounded-t-3xl bg-white shadow-lg relative overflow-hidden">
-          {/* Left Sidebar - Hidden on mobile */}
-          <div className="hidden md:block w-56 flex-shrink-0 overflow-hidden">
-            <div className="h-full overflow-y-auto theme-scrollbar">
-              <AdminSidebar />
+          {/* Bottom Section with curved border - White background */}
+          <div className="flex-1 flex rounded-t-3xl bg-white shadow-lg relative overflow-hidden">
+            {/* Left Sidebar - Hidden on mobile */}
+            <div className="hidden md:block w-56 flex-shrink-0 overflow-hidden">
+              <div className="h-full overflow-y-auto theme-scrollbar">
+                <AdminSidebar />
+              </div>
+            </div>
+
+            {/* Main Content - Scrollable area with proper text colors and themed scrollbar */}
+            <div className="flex-1 flex flex-col min-h-0 bg-[#f1f1f1] overflow-hidden">
+              <main className="flex-1 overflow-y-auto theme-scrollbar main-content-scroll">
+                <div className="p-3 md:p-6">
+                  <div className="max-w-full text-gray-900">
+                    {children}
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <Footer/>
+                </div> 
+              </main>
             </div>
           </div>
-
-          {/* Main Content - Scrollable area with proper text colors and themed scrollbar */}
-          <div className="flex-1 flex flex-col min-h-0 bg-[#f1f1f1] overflow-hidden">
-            <main className="flex-1 overflow-y-auto theme-scrollbar main-content-scroll">
-              <div className="p-3 md:p-6">
-                <div className="max-w-full text-gray-900">
-                  {children}
-                </div>
-              </div>
-              <div className="flex-shrink-0">
-                <Footer/>
-              </div>
-            </main>
-          </div>
         </div>
-      </div>
-    </MobileDetector>
+      </MobileDetector>
+    </SubscriptionGuard>
   );
 }

@@ -1,12 +1,17 @@
 import { format } from 'date-fns';
+import { auth } from '@clerk/nextjs';
+import { clerkClient } from '@clerk/nextjs/server';
 
 import prismadb from '@/lib/prismadb';
 import { formatter } from '@/lib/utils';
 
 import { ProductsClient } from './components/client';
 import { ProductColumn } from './components/columns';
+import { SubscriptionGuard } from '@/components/subscription/subscription-guard';
 
 const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
+  const { userId } = auth();
+  
   const products = await prismadb.product.findMany({
     where: {
       storeId: params.storeId,
@@ -34,10 +39,28 @@ const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
     stockQuantity: item.stockQuantity
   }));
 
+  // Get user subscription details for product limit check
+  let user = null;
+  if (userId) {
+    try {
+      user = await clerkClient.users.getUser(userId);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  }
+
+  const isSubscribed = user?.publicMetadata?.isSubscribed || false;
+  const planDetails = user?.publicMetadata?.planDetails;
+
   return (
     <div className='flex-col'>
       <div className='flex-1 space-y-4 p-8 pt-6'>
-        <ProductsClient data={formattedProducts} />
+        <SubscriptionGuard 
+          requiredFeature="product" 
+          currentCount={products.length}
+        >
+          <ProductsClient data={formattedProducts} />
+        </SubscriptionGuard>
       </div>
     </div>
   );

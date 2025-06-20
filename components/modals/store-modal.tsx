@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Store } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 
 import { useStoreModal } from '@/hooks/use-store-modal';
 import { Modal } from '@/components/ui/modal';
@@ -28,6 +29,7 @@ const formSchema = z.object({
 export const StoreModal = () => {
   const storeModal = useStoreModal();
   const [loading, setLoading] = useState(false);
+  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,7 +41,42 @@ export const StoreModal = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
+
+      // Check subscription limits before creating store
+      if (user?.publicMetadata) {
+        const metadata = user.publicMetadata as any;
+        const isSubscribed = metadata?.isSubscribed || false;
+        const planDetails = metadata?.planDetails;
+        console.log(metadata, "metadata");
+        if (!isSubscribed || !planDetails) {
+          toast.error('Please subscribe to create a store');
+          return;
+        }
+
+        // Check if subscription is expired
+        if (planDetails.subscriptionEndDate) {
+          const endDate = new Date(planDetails.subscriptionEndDate);
+          const now = new Date();
+          if (now > endDate) {
+            toast.error('Your subscription has expired. Please renew to create stores.');
+            return;
+          }
+        }
+
+        // Get current store count
+        const storesResponse = await axios.get('/api/stores');
+        console.log(storesResponse, "storesResponse"); 
+        const currentStoreCount = storesResponse.data?.length || 0;
+
+        // Check store limit
+        if (planDetails.storesAllowed !== -1 && currentStoreCount >= planDetails.storesAllowed) {
+          toast.error(`You've reached your store limit (${planDetails.storesAllowed}). Upgrade your plan to create more stores.`);
+          return;
+        }
+      }
+
       const response = await axios.post('/api/stores', values);
+      console.log(response, "response");
       window.location.assign(`/${response.data.id}`);
     } catch (error) {
       toast.error('Something went wrong');
