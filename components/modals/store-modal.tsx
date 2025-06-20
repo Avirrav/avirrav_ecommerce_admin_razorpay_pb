@@ -63,17 +63,7 @@ export const StoreModal = () => {
           }
         }
 
-        // Get current store count
-        const storesResponse = await axios.get('/api/stores');
-        console.log(storesResponse, "storesResponse"); 
-        const currentStoreCount = storesResponse.data?.length || 0;
-
-        // Check store limit
-        if (planDetails.storesAllowed !== -1 && currentStoreCount >= planDetails.storesAllowed) {
-          toast.error(`You've reached your store limit (${planDetails.storesAllowed}). Upgrade your plan to create more stores.`);
-          return;
-        }
-      }
+      } 
 
       const response = await axios.post('/api/stores', values);
       console.log(response, "response");

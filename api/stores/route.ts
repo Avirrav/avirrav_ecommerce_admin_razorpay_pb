@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const metadata = user.publicMetadata as any;
     const isSubscribed = metadata?.isSubscribed || false;
     const planDetails = metadata?.planDetails;
-
+    
     if (!isSubscribed || !planDetails) {
       return new NextResponse('Subscription required to create stores', { status: 403 });
     }
