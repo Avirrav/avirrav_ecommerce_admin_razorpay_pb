@@ -1,6 +1,7 @@
 'use client';
 
 import { useStoreModal } from '@/hooks/use-store-modal';
+import { useStoreLimits } from '@/hooks/use-store-limits';
 import { useUser } from '@clerk/nextjs';
 import { useEffect } from 'react';
 
@@ -8,29 +9,17 @@ export default function SetupPage() {
   const onOpen = useStoreModal((state) => state.onOpen);
   const isOpen = useStoreModal((state) => state.isOpen);
   const { user, isLoaded } = useUser();
+  const storeLimits = useStoreLimits(0); // 0 stores since this is the setup page
 
   useEffect(() => {
-    if (isLoaded && user && !isOpen) {
-      // Check if user is subscribed
-      const isSubscribed = user.publicMetadata?.isSubscribed || false;
-      const planDetails = user.publicMetadata?.planDetails;
-      
-      if (isSubscribed && planDetails) {
-        // Check if subscription is expired
-        if (planDetails.subscriptionEndDate) {
-          const endDate = new Date(planDetails.subscriptionEndDate);
-          const now = new Date();
-          if (now <= endDate) {
-            onOpen();
-            return;
-          }
-        }
+    if (isLoaded && user && !isOpen && !storeLimits.isLoading) {
+      // Only open modal if user can create stores
+      if (storeLimits.canCreateStore) {
+        onOpen();
       }
-      
-      // If not subscribed or expired, the SubscriptionGuard will handle it
-      onOpen();
+      // If user can't create stores, the SubscriptionGuard will handle showing upgrade screen
     }
-  }, [isLoaded, user, isOpen, onOpen]);
+  }, [isLoaded, user, isOpen, onOpen, storeLimits.canCreateStore, storeLimits.isLoading]);
 
   return null;
 }

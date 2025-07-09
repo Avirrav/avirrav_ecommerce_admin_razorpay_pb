@@ -61,12 +61,6 @@ export const TopBar = ({ stores }: TopBarProps) => {
       {/* Right - User Actions */}
       <div className="flex items-center space-x-2 ml-auto">
         <PlanBadge />
-        <ThemeToggle />
-        <Button variant="ghost" size="icon-sm" asChild className="text-gray-300 hover:text-white hover:bg-gray-800 border-0">
-          <a href="/documentation" target="_blank">
-            <FileText className="h-4 w-4" />
-          </a>
-        </Button>
         <CustomUserButton />
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronsUpDown, PlusCircle, Store } from 'lucide-react';
+import { Check, ChevronsUpDown, PlusCircle, Store, Lock } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useStoreModal } from '@/hooks/use-store-modal';
+import { useStoreLimits } from '@/hooks/use-store-limits';
 import { useParams, useRouter } from 'next/navigation';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -37,6 +38,7 @@ export default function StoreSwitcher({
   const storeModal = useStoreModal();
   const params = useParams();
   const router = useRouter();
+  const storeLimits = useStoreLimits(items.length);
 
   const formattedItems = items.map((item) => ({
     label: item.name,
@@ -52,6 +54,13 @@ export default function StoreSwitcher({
   const onStoreSelect = (store: { value: string; label: string }) => {
     setOpen(false);
     router.push(`/${store.value}`);
+  };
+
+  const handleCreateStore = () => {
+    setOpen(false);
+    if (storeLimits.canCreateStore) {
+      storeModal.onOpen();
+    }
   };
 
   return (
@@ -105,14 +114,33 @@ export default function StoreSwitcher({
           <CommandList>
             <CommandGroup>
               <CommandItem
-                onSelect={() => {
-                  setOpen(false);
-                  storeModal.onOpen();
-                }}
-                className="hover:bg-gray-100 font-medium text-gray-900"
+                onSelect={handleCreateStore}
+                disabled={!storeLimits.canCreateStore}
+                className={cn(
+                  "font-medium",
+                  storeLimits.canCreateStore
+                    ? "hover:bg-gray-100 text-gray-900 cursor-pointer"
+                    : "text-gray-400 cursor-not-allowed opacity-50"
+                )}
               >
-                <PlusCircle className='mr-2 h-5 w-5 text-gray-600' />
-                Create Store
+                {storeLimits.canCreateStore ? (
+                  <PlusCircle className='mr-2 h-5 w-5 text-gray-600' />
+                ) : (
+                  <Lock className='mr-2 h-5 w-5 text-gray-400' />
+                )}
+                <div className="flex flex-col">
+                  <span>Create Store</span>
+                  {!storeLimits.canCreateStore && !storeLimits.isLoading && (
+                    <span className="text-xs text-gray-400 mt-0.5">
+                      {storeLimits.isExpired
+                        ? 'Subscription expired'
+                        : !storeLimits.isSubscribed
+                          ? 'Subscription required'
+                          : `Limit reached (${storeLimits.storesAllowed})`
+                      }
+                    </span>
+                  )}
+                </div>
               </CommandItem>
             </CommandGroup>
           </CommandList>
