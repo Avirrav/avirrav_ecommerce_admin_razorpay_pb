@@ -6,9 +6,10 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Zap, Star, AlertTriangle, Shield } from 'lucide-react';
+import { Check, Crown, Zap, Star, AlertTriangle, Shield, Sparkles, Users, Package, BarChart3, Headphones, Globe, Lock, CreditCard } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { cn } from '@/lib/utils';
 
 interface SubscriptionUpgradeProps {
   message?: string;
@@ -25,70 +26,80 @@ export const SubscriptionUpgrade = ({ message }: SubscriptionUpgradeProps) => {
     {
       name: 'Trial',
       price: 30,
+      originalPrice: 50,
       duration: '6 months',
       icon: Zap,
-      color: 'bg-blue-600',
-      bgColor: 'bg-blue-50',
+      gradient: 'from-blue-500 to-blue-600',
+      bgGradient: 'from-blue-50 to-blue-100',
       borderColor: 'border-blue-200',
       textColor: 'text-blue-700',
+      buttonColor: 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600',
       features: [
-        '1 Store',
-        '10 Products',
-        'Basic Analytics',
-        'Email Support',
-        'Mobile Responsive'
+        { text: '1 Store', icon: Package },
+        { text: '10 Products', icon: BarChart3 },
+        { text: 'Basic Analytics', icon: BarChart3 },
+        { text: 'Email Support', icon: Headphones },
+        { text: 'Mobile Responsive', icon: Globe }
       ],
       limits: {
         stores: 1,
         products: 10
       },
-      popular: false
+      popular: false,
+      savings: '40% OFF',
+      description: 'Perfect for testing'
     },
     {
       name: 'Basic',
-      price: 2000,
+      price: 3000,
+      originalPrice: 5000,
       duration: '12 months',
       icon: Star,
-      color: 'bg-emerald-600',
-      bgColor: 'bg-emerald-50',
+      gradient: 'from-emerald-500 to-emerald-600',
+      bgGradient: 'from-emerald-50 to-emerald-100',
       borderColor: 'border-emerald-200',
       textColor: 'text-emerald-700',
+      buttonColor: 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600',
       features: [
-        'Unlimited Stores',
-        'Unlimited Products',
-        'Advanced Analytics',
-        'Priority Support',
-        'Custom Domain',
-        'API Access'
+        { text: 'Unlimited Stores', icon: Package },
+        { text: 'Unlimited Products', icon: BarChart3 },
+        { text: 'Advanced Analytics(Upcoming)', icon: BarChart3 },
+        { text: 'Priority Support', icon: Headphones },
+        { text: 'API Access', icon: Lock }
       ],
       limits: {
         stores: -1,
         products: -1
       },
-      popular: true
+      popular: true,
+      savings: '40% OFF',
+      description: 'Most popular choice'
     },
     {
       name: 'Advanced',
       price: 6000,
+      originalPrice: 10000,
       duration: '12 months',
       icon: Crown,
-      color: 'bg-purple-600',
-      bgColor: 'bg-purple-50',
+      gradient: 'from-purple-500 to-purple-600',
+      bgGradient: 'from-purple-50 to-purple-100',
       borderColor: 'border-purple-200',
       textColor: 'text-purple-700',
+      buttonColor: 'bg-purple-600 hover:purple-700 text-white border-purple-600',
       features: [
-        'Everything in Basic',
-        'White Label Solution',
-        'Advanced Integrations',
-        'Dedicated Support',
-        'Custom Features',
-        'Priority Updates'
+        { text: 'Everything in Basic', icon: Star },
+        { text: 'Custom Store Front', icon: Sparkles },
+        { text: 'Custom Domain', icon: Globe },
+        { text: 'Dedicated Support', icon: Users },
+        { text: 'Priority Updates', icon: BarChart3 }
       ],
       limits: {
         stores: -1,
         products: -1
       },
-      popular: false
+      popular: false,
+      savings: '40% OFF',
+      description: 'Enterprise-grade features'
     }
   ];
 
@@ -100,15 +111,17 @@ export const SubscriptionUpgrade = ({ message }: SubscriptionUpgradeProps) => {
     document.body.appendChild(script);
 
     if (searchParams.get('success')) {
-      toast.success('Payment completed.');
+      toast.success('Payment completed successfully!');
     }
 
     if (searchParams.get('canceled')) {
-      toast.error('Something went wrong.');
+      toast.error('Payment was cancelled.');
     }
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, [searchParams]);
 
@@ -183,143 +196,155 @@ export const SubscriptionUpgrade = ({ message }: SubscriptionUpgradeProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-6">
-            <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-              <Shield className="h-8 w-8 text-blue-600" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Choose Your Plan
-          </h1>
-          {message ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl mx-auto mb-6">
-              <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 text-red-600 mr-3" />
-                <p className="text-red-800 font-medium">{message}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-lg text-gray-600 mb-4">
-                Unlock the full potential of your e-commerce business
-              </p>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl mx-auto">
-                <div className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mr-3" />
-                  <p className="text-red-800 font-medium">
-                    Free Plan: 0 stores, 0 products - Subscribe to get started!
-                  </p>
+    <div className="h-screen overflow-hidden lg:overflow-auto bg-surface">
+      {/* Mobile: Scrollable container */}
+      <div className="h-full overflow-y-auto lg:overflow-visible lg:h-auto">
+        <div className="min-h-full lg:min-h-screen flex flex-col">
+          <div className="flex-1 max-w-7xl mx-auto px-4 py-4 lg:py-8">
+            {/* Header Section - Compact */}
+            <div className="text-center mb-[75px] lg:mb-[80px]">
+              <div className="flex items-center justify-center mb-4 lg:mb-6">
+                <div className="relative">
+                  <div className="p-3 lg:p-4 bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl lg:rounded-2xl border border-primary/20">
+                    <Shield className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 lg:w-5 lg:h-5 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-full flex items-center justify-center">
+                    <Sparkles className="h-2 w-2 lg:h-3 lg:w-3 text-white" />
+                  </div>
                 </div>
               </div>
+              
+              <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-3 lg:mb-4">
+                Choose Your Plan
+              </h1>
+              
+              {message ? (
+                <div className="bg-critical-subdued border border-critical rounded-lg p-3 lg:p-4 max-w-2xl mx-auto mb-4 lg:mb-6">
+                  <div className="flex items-center justify-center">
+                    <AlertTriangle className="h-4 w-4 lg:h-5 lg:w-5 text-critical mr-2 lg:mr-3 flex-shrink-0" />
+                    <p className="text-sm lg:text-base text-critical font-medium">{message}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 lg:space-y-4">
+                  <p className="text-lg lg:text-xl text-muted-foreground mb-4 lg:mb-6">
+                    Unlock the full potential of your e-commerce business
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-center gap-2 mt-4 lg:mt-6">
+                <span className="text-xs lg:text-sm text-muted-foreground">
+                  Secure payment • Cancel anytime
+                </span>
+              </div>
             </div>
-          )}
-          <p className="text-sm text-gray-500 mt-4">
-            All plans include 24/7 support and regular updates
-          </p>
-        </div>
 
-        {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
-            return (
-              <Card 
-                key={plan.name} 
-                className={`relative border-2 transition-all duration-200 hover:shadow-lg ${
-                  plan.popular 
-                    ? 'border-blue-500 shadow-md scale-105' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-600 text-white px-4 py-1 font-semibold">
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                
-                <CardHeader className="text-center pb-4">
-                  <div className={`w-12 h-12 ${plan.color} rounded-lg mx-auto mb-4 flex items-center justify-center`}>
-                    <Icon className="h-6 w-6 text-white" />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Perfect for {plan.name.toLowerCase()} users
-                  </CardDescription>
-                  <div className="mt-4">
-                    <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
-                    <span className="text-gray-600 ml-2">/ {plan.duration}</span>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-0">
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center">
-                        <div className="p-1 bg-emerald-50 rounded-full mr-3">
-                          <Check className="h-3 w-3 text-emerald-600" />
-                        </div>
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    onClick={() => handleSubscribe(plan.name)}
-                    disabled={loading === plan.name}
-                    className={`w-full ${
+            {/* Plans Grid - Responsive and Compact */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+              {plans.map((plan) => {
+                const Icon = plan.icon;
+                return (
+                  <Card 
+                    key={plan.name} 
+                    className={cn(
+                      "relative border-2 transition-all duration-300 hover:shadow-lg group",
                       plan.popular 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-white border border-gray-300 text-gray-900 hover:bg-gray-50'
-                    }`}
-                    variant={plan.popular ? 'primary' : 'outline'}
-                  >
-                    {loading === plan.name ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Processing...
-                      </div>
-                    ) : (
-                      `Subscribe to ${plan.name}`
+                        ? "border-primary shadow-lg lg:scale-105 ring-2 ring-primary/20" 
+                        : "border-border hover:border-primary/50"
                     )}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-3 lg:-top-4 left-1/2 transform -translate-x-1/2 z-10">
+                        <Badge className="bg-primary text-primary-foreground px-3 lg:px-4 py-1 lg:py-1.5 font-semibold shadow-lg text-xs lg:text-sm">
+                          <Star className="h-3 w-3 mr-1" />
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
 
-        {/* Current Plan Notice */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center flex items-center justify-center">
-            <Shield className="h-5 w-5 mr-2 text-blue-600" />
-            Plan Comparison
-          </h3>
-          <div className="grid md:grid-cols-4 gap-4 text-center">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h4 className="font-semibold text-red-900 mb-2">Free Plan</h4>
-              <p className="text-sm text-red-700 font-medium">0 Stores • 0 Products</p>
-              <p className="text-xs text-red-600 mt-1">Subscribe to get started!</p>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-900 mb-2">Trial Plan</h4>
-              <p className="text-sm text-blue-700 font-medium">1 Store • 10 Products</p>
-              <p className="text-xs text-blue-600 mt-1">6 months • ₹30</p>
-            </div>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <h4 className="font-semibold text-emerald-900 mb-2">Basic Plan</h4>
-              <p className="text-sm text-emerald-700 font-medium">Unlimited • Unlimited</p>
-              <p className="text-xs text-emerald-600 mt-1">12 months • ₹2000</p>
-            </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h4 className="font-semibold text-purple-900 mb-2">Advanced Plan</h4>
-              <p className="text-sm text-purple-700 font-medium">Unlimited • Unlimited</p>
-              <p className="text-xs text-purple-600 mt-1">12 months • ₹6000</p>
+                    {plan.savings && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-2 lg:px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                          {plan.savings}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <CardHeader className="text-center pb-3 lg:pb-4 relative overflow-hidden">
+                      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-5", plan.bgGradient)} />
+                      
+                      <div className="relative z-10">
+                        <div className={cn(
+                          "w-12 h-12 lg:w-14 lg:h-14 mx-auto mb-3 lg:mb-4 rounded-xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-lg",
+                          plan.gradient
+                        )}>
+                          <Icon className="h-6 w-6 lg:h-7 lg:w-7 text-white" />
+                        </div>
+                        
+                        <CardTitle className="text-xl lg:text-2xl font-bold text-foreground mb-1 lg:mb-2">
+                          {plan.name}
+                        </CardTitle>
+                        
+                        <CardDescription className="text-sm lg:text-base text-muted-foreground mb-3 lg:mb-4">
+                          {plan.description}
+                        </CardDescription>
+                        
+                        <div className="space-y-1 lg:space-y-2">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-2xl lg:text-3xl font-bold text-foreground">₹{plan.price}</span>
+                            <span className="text-base lg:text-lg text-muted-foreground line-through">₹{plan.originalPrice}</span>
+                          </div>
+                          <p className="text-xs lg:text-sm text-muted-foreground">per {plan.duration}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="pt-0 pb-4 lg:pb-6">
+                      <ul className="space-y-2 lg:space-y-3 mb-4 lg:mb-6">
+                        {plan.features.map((feature, index) => {
+                          const FeatureIcon = feature.icon;
+                          return (
+                            <li key={index} className="flex items-center group/item">
+                              <div className="p-1 lg:p-1.5 bg-success-subdued rounded-lg mr-2 lg:mr-3 group-hover/item:bg-success-surface transition-colors">
+                                <Check className="h-3 w-3 text-success" />
+                              </div>
+                              <div className="flex items-center gap-1 lg:gap-2">
+                                <FeatureIcon className="h-3 w-3 lg:h-4 lg:w-4 text-muted-foreground" />
+                                <span className="text-xs lg:text-sm text-foreground font-medium">{feature.text}</span>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      <Button
+                        onClick={() => handleSubscribe(plan.name)}
+                        disabled={loading === plan.name}
+                        className={cn(
+                          "w-full h-10 lg:h-12 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl text-sm lg:text-base",
+                          plan.popular 
+                            ? "bg-primary hover:bg-primary/90 text-primary-foreground border-primary" 
+                            : plan.buttonColor
+                        )}
+                        size="lg"
+                      >
+                        {loading === plan.name ? (
+                          <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-3 w-3 lg:h-4 lg:w-4 border-b-2 border-white"></div>
+                            Processing...
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-3 w-3 lg:h-4 lg:w-4" />
+                            Subscribe to {plan.name}
+                          </div>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>

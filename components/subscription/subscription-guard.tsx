@@ -56,10 +56,16 @@ export const SubscriptionGuard = ({
 
   if (!isLoaded || isLoading) {
     return (
-      <div className="h-full w-full flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-2">
-          <Loader size="large" />
-          <p className="text-muted-foreground animate-pulse">Loading...</p>
+      <div className="h-full w-full flex items-center justify-center min-h-[400px] bg-surface">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="w-12 h-12 border-4 border-gray-200 rounded-full animate-spin"></div>
+            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">Loading Dashboard</h3>
+            <p className="text-sm text-muted-foreground animate-pulse">Verifying your subscription...</p>
+          </div>
         </div>
       </div>
     );
