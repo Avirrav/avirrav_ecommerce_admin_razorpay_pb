@@ -28,7 +28,7 @@ const OrderViewPage = async ({
 
   // Calculate total price from order items
   const totalPrice = order.orderItems.reduce((total, item) => {
-    return total + (item.product.price.toNumber() * item.quantity);
+    return total + (item.price.toNumber() * item.quantity); // Use item.price
   }, 0);
 
   const formattedOrder = {

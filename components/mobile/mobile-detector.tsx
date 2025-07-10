@@ -36,7 +36,7 @@ export const MobileDetector = ({ children, storeId, stores }: MobileDetectorProp
       const formattedOrders = ordersArray.map((order: any) => {
         const orderItems = order.orderItems || [];
         const totalPrice = orderItems.reduce((total: number, item: any) => 
-          total + (Number(item.product?.price || 0) * (item.quantity || 1)), 0);
+          total + (Number(item.price || 0) * (item.quantity || 1)), 0); // Use item.price
         
         return {
           id: order.id || '',
@@ -66,6 +66,8 @@ export const MobileDetector = ({ children, storeId, stores }: MobileDetectorProp
 
       // Format stores for store switcher
       const formattedStores = storesArray.map((store: any) => ({
+        id: store.id, // Add id here
+        name: store.name, // Add name here
   // Remove this duplicate function as it's now defined above
         username: store.username || '',
         apiUrl: store.apiUrl || '',
