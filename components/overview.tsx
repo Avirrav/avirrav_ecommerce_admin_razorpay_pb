@@ -1,6 +1,7 @@
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { formatter } from '@/lib/utils';
 
 interface OverviewProps {
   data: any[];
@@ -25,7 +26,7 @@ export const Overview = ({ data }: OverviewProps) => {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value: number) => `₹${value}`}
+            tickFormatter={(value: number) => formatter.format(value)}
             tickMargin={8}
           />
           <Tooltip 
@@ -37,7 +38,7 @@ export const Overview = ({ data }: OverviewProps) => {
               padding: '12px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}
-            formatter={(value: number) => [`₹${value}`, 'Revenue']}
+            formatter={(value: number) => [formatter.format(value), 'Revenue']}
           />
           <Bar 
             dataKey='total' 

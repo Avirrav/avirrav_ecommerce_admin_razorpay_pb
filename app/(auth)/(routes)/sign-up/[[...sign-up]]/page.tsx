@@ -15,11 +15,11 @@ export default function SignUpPage() {
 
           {/* Clerk SignUp Card */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-4 lg:p-6">
+            <div className="p-[40px] lg:p-[40px]">
               <SignUp 
                 appearance={{
                   elements: {
-                    rootBox: "w-full",
+                    rootBox: "w-90%",
                     card: "shadow-none border-0 p-0 w-full",
                     headerTitle: "text-lg lg:text-xl font-semibold text-gray-900",
                     headerSubtitle: "text-sm text-gray-600 mt-1",

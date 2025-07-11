@@ -11,13 +11,23 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// Generate a random string for COD order ID
+function generateRandomString(length: number) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export async function POST(
   req: Request,
-  { params }: { params: { storeId: string } }
+  context: { params: { storeId: string } }
 ) {
+  const { params } = await context;
   try {
     const {
-      productIds,
       fullName,
       email,
       phone,
@@ -26,9 +36,9 @@ export async function POST(
       city,
       state,
       postalCode,
-      country
+      country,
+      productIds
     } = await req.json();
-
     if (!productIds || productIds.length === 0) {
       console.error('Product ids are required');
       return new NextResponse("Product ids are required", { status: 400 });
@@ -45,8 +55,8 @@ export async function POST(
       return new NextResponse("Store Razorpay credentials not found", { status: 400 });
     }
 
-    // Check stock availability for all products
-    const products = await prismadb.product.findMany({
+    // Fetch products with their current prices and check stock
+    const productsInOrder = await prismadb.product.findMany({
       where: {
         id: {
           in: productIds
@@ -54,18 +64,20 @@ export async function POST(
       }
     });
 
-    // Create a map of product quantities
-    const productQuantityMap = productIds.reduce((acc: { [key: string]: number }, id: string) => {
-      acc[id] = (acc[id] || 0) + 1;
-      return acc;
-    }, {});
+    // Create a map of product quantities and calculate total amount on backend
+    const productQuantityMap: { [key: string]: number } = {};
+    let calculatedAmount = 0;
 
-    // Check if any product is out of stock
-    for (const product of products) {
+    for (const productId of productIds) {
+      productQuantityMap[productId] = (productQuantityMap[productId] || 0) + 1;
+    }
+
+    for (const product of productsInOrder) {
       const requestedQuantity = productQuantityMap[product.id] || 0;
       if (!product.sellWhenOutOfStock && product.stockQuantity < requestedQuantity) {
         return new NextResponse(`Product ${product.name} is out of stock`, { status: 400 });
       }
+      calculatedAmount += product.price.toNumber() * requestedQuantity;
     }
 
     try {
@@ -128,8 +140,8 @@ export async function POST(
           }
         });
       }
-
-
+      
+      const razorOrderId = `cod_${generateRandomString(14)}`;
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
         // Create the order
@@ -141,26 +153,29 @@ export async function POST(
             phone,
             email: email || '',
             address: addressLine1,
+            razorOrderId,
             paymentMethod: 'CASH ON DELIVERY',
             paymentStatus: 'PAID',
             orderStatus: 'confirmed',
             orderItems: {
-              create: productIds.map((productId: string) => ({
-                product: {
-                  connect: {
-                    id: productId
-                  }
-                }
-              }))
+              create: productIds.map((productId: string) => {
+                const product = productsInOrder.find(p => p.id === productId);
+                return {
+                  product: { connect: { id: productId } },
+                  price: product?.price?.toNumber() ?? 0
+                };
+              })
             },
           },
         });
         // Update stock quantities
-        for (const product of products) {
+        for (const product of productsInOrder) {
           const quantityOrdered = productQuantityMap[product.id] || 0;
           if (!product.sellWhenOutOfStock) {
             await tx.product.update({
-              where: { id: product.id },
+              where: {
+                id: product.id
+              },
               data: {
                 stockQuantity: {
                   decrement: quantityOrdered
@@ -174,19 +189,19 @@ export async function POST(
       });
 
       return NextResponse.json({
-        orderId: order.id,
+        orderId: order.razorOrderId,
         message: "Order placed successfully with Cash on Delivery"
       }, {
         status: 200,
         headers: corsHeaders
       });
 
-      } catch (error) {
-        console.log('[CHECKOUT_COD_ERROR]', error);
-        return new NextResponse("Internal error", { status: 500 });
-      }
     } catch (error) {
       console.log('[CHECKOUT_COD_ERROR]', error);
       return new NextResponse("Internal error", { status: 500 });
     }
+  } catch (error) {
+    console.log('[CHECKOUT_COD_ERROR]', error);
+    return new NextResponse("Internal error", { status: 500 });
   }
+}

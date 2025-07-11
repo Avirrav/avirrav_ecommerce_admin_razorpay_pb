@@ -27,7 +27,6 @@ export async function POST(
       quantities,
       paymentStatus,
       paymentMethod,
-      totalPrice,
       orderStatus,
       isPaid
     } = body;
@@ -51,8 +50,8 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 405 });
     }
 
-    // Check stock availability for all products
-    const products = await prismadb.product.findMany({
+    // Fetch products with their current prices and check stock
+    const productsInOrder = await prismadb.product.findMany({
       where: {
         id: {
           in: Object.keys(quantities)
@@ -60,12 +59,14 @@ export async function POST(
       }
     });
 
-    // Check if any product is out of stock
-    for (const product of products) {
+    let calculatedTotalPrice = 0;
+    // Check if any product is out of stock and calculate total price
+    for (const product of productsInOrder) {
       const requestedQuantity = quantities[product.id] || 0;
       if (!product.sellWhenOutOfStock && product.stockQuantity < requestedQuantity) {
         return new NextResponse(`Product ${product.name} is out of stock`, { status: 400 });
       }
+      calculatedTotalPrice += product.price.toNumber() * requestedQuantity;
     }
 
     // Prepare the shipping address
@@ -146,19 +147,16 @@ export async function POST(
           isPaid,
           orderItems: {
             create: Object.entries(quantities).map(([productId, quantity]) => ({
-              product: {
-                connect: {
-                  id: productId
-                }
-              },
-              quantity: Number(quantity)
+              productId: productId,
+              quantity: Number(quantity),
+              price: productsInOrder.find(p => p.id === productId)?.price || 0, // Store the price at the time of order
             }))
           }
         }
       });
 
       // Update stock quantities
-      for (const product of products) {
+      for (const product of productsInOrder) {
         const quantityOrdered = quantities[product.id] || 0;
         if (!product.sellWhenOutOfStock) {
           await tx.product.update({

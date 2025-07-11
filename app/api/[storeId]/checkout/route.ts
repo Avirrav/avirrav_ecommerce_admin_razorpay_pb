@@ -18,8 +18,6 @@ export async function POST(
 ) {
   try {
     const {
-      productIds,
-      amount,
       fullName,
       email,
       phone,
@@ -28,9 +26,9 @@ export async function POST(
       city,
       state,
       postalCode,
-      country
+      country,
+      productIds
     } = await req.json();
-    
     if (!productIds || productIds.length === 0) {
       console.error('Product ids are required');
       return new NextResponse("Product ids are required", { status: 400 });
@@ -47,8 +45,8 @@ export async function POST(
       return new NextResponse("Store Razorpay credentials not found", { status: 400 });
     }
 
-    // Check stock availability for all products
-    const products = await prismadb.product.findMany({
+    // Fetch products with their current prices and check stock
+    const productsInOrder = await prismadb.product.findMany({
       where: {
         id: {
           in: productIds
@@ -56,18 +54,20 @@ export async function POST(
       }
     });
 
-    // Create a map of product quantities
-    const productQuantityMap = productIds.reduce((acc: { [key: string]: number }, id: string) => {
-      acc[id] = (acc[id] || 0) + 1;
-      return acc;
-    }, {});
+    // Create a map of product quantities and calculate total amount on backend
+    const productQuantityMap: { [key: string]: number } = {};
+    let calculatedAmount = 0;
 
-    // Check if any product is out of stock
-    for (const product of products) {
+    for (const productId of productIds) {
+      productQuantityMap[productId] = (productQuantityMap[productId] || 0) + 1;
+    }
+
+    for (const product of productsInOrder) {
       const requestedQuantity = productQuantityMap[product.id] || 0;
       if (!product.sellWhenOutOfStock && product.stockQuantity < requestedQuantity) {
         return new NextResponse(`Product ${product.name} is out of stock`, { status: 400 });
       }
+      calculatedAmount += product.price.toNumber() * requestedQuantity;
     }
 
     // Initialize Razorpay with store credentials
@@ -76,7 +76,6 @@ export async function POST(
       key_secret: store.razorpayKeySecret
     });
 
-    // Wrap customer creation/update in try-catch
     try {
       // Check if customer exists using findUnique with composite key
       let customer = await prismadb.customer.findUnique({
@@ -140,7 +139,7 @@ export async function POST(
 
       // Create Razorpay order
       const razorpayOrder = await razorpay.orders.create({
-        amount: amount,
+        amount: calculatedAmount * 100, // Use calculated amount in paise
         currency: "INR",
         receipt: `order_${Date.now()}`,
       });
@@ -158,18 +157,16 @@ export async function POST(
             address: addressLine1,
             razorOrderId: razorpayOrder.id,
             orderItems: {
-              create: productIds.map((productId: string) => ({
-                product: {
-                  connect: {
-                    id: productId
-                  }
-                }
+              create: productsInOrder.map(product => ({
+                productId: product.id,
+                quantity: productQuantityMap[product.id],
+                price: product.price, // Store the price at the time of order
               }))
             },
           },
         });
         // Update stock quantities
-        for (const product of products) {
+        for (const product of productsInOrder) {
           const quantityOrdered = productQuantityMap[product.id] || 0;
           if (!product.sellWhenOutOfStock) {
             await tx.product.update({
@@ -190,11 +187,10 @@ export async function POST(
         headers: corsHeaders
       });
 
-    } catch (customerError) {
-      console.error('[CUSTOMER_ERROR]', customerError);
-      return new NextResponse("Error processing customer data", { status: 500 });
+    } catch (error) {
+      console.error('[CHECKOUT_ERROR]', error);
+      return new NextResponse("Internal error", { status: 500 });
     }
-
   } catch (error) {
     console.error('[CHECKOUT_ERROR]', error);
     return new NextResponse("Internal error", { status: 500 });

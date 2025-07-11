@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs';
+import { clerkClient } from '@clerk/nextjs/server';
+
 import prismadb from '@/lib/prismadb';
 
 export async function POST(req: Request) {
@@ -15,6 +17,37 @@ export async function POST(req: Request) {
 
     if (!name) {
       return new NextResponse('Name is required', { status: 400 });
+    }
+
+    // Get user subscription details
+    const user = await clerkClient.users.getUser(userId);
+    const metadata = user.publicMetadata as any;
+    const isSubscribed = metadata?.isSubscribed || false;
+    const planDetails = metadata?.planDetails;
+    
+    if (!isSubscribed || !planDetails) {
+      return new NextResponse('Subscription required to create stores', { status: 403 });
+    }
+
+    // Check if subscription is expired
+    if (planDetails.subscriptionEndDate) {
+      const endDate = new Date(planDetails.subscriptionEndDate);
+      const now = new Date();
+      if (now > endDate) {
+        return new NextResponse('Subscription expired', { status: 403 });
+      }
+    }
+
+    // Get current store count
+    const existingStores = await prismadb.store.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    // Check store limit
+    if (planDetails.storesAllowed !== -1 && existingStores.length >= planDetails.storesAllowed) {
+      return new NextResponse(`Store limit reached. Maximum allowed: ${planDetails.storesAllowed}`, { status: 403 });
     }
 
     const store = await prismadb.store.create({
