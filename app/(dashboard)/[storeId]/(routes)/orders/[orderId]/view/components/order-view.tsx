@@ -85,7 +85,7 @@ export const OrderView: React.FC<OrderViewProps> = ({ data }) => {
     y += lineHeight;
     doc.text("Order Items:", 20, y); y += lineHeight;
     data.orderItems.forEach((item: any) => {
-      doc.text(`- ${item.product.name} (Qty: ${item.quantity}) - ${formatter.format(item.price.toNumber())}`, 30, y); // Use item.price
+      doc.text(`- ${item.product.name} (Qty: ${item.quantity}) - ${formatter.format(item.price)}`, 30, y); // Use item.price
       y += lineHeight;
     });
 
@@ -220,11 +220,11 @@ export const OrderView: React.FC<OrderViewProps> = ({ data }) => {
                   {/* Price */}
                   <div className="text-right">
                     <p className="text-sm font-semibold text-gray-900">
-                      {formatter.format(item.price.toNumber())} {/* Use item.price */}
+                      {formatter.format(item.price)}
                     </p>
                     {item.quantity > 1 && (
                       <p className="text-xs text-gray-500">
-                        {formatter.format(item.price.toNumber() * item.quantity)} total {/* Use item.price */}
+                        {formatter.format(item.price * item.quantity)} total {/* Use item.price */}
                       </p>
                     )}
                   </div>

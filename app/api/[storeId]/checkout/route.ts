@@ -26,10 +26,9 @@ export async function POST(
       city,
       state,
       postalCode,
-      country
+      country,
+      productIds
     } = await req.json();
-    const { productIds } = await req.json();
-    
     if (!productIds || productIds.length === 0) {
       console.error('Product ids are required');
       return new NextResponse("Product ids are required", { status: 400 });
