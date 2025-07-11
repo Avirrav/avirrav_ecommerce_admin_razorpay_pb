@@ -11,6 +11,16 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// Generate a random string for COD order ID
+function generateRandomString(length: number) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export async function POST(
   req: Request,
   context: { params: { storeId: string } }
@@ -130,8 +140,8 @@ export async function POST(
           }
         });
       }
-
-
+      
+      const razorOrderId = `cod_${generateRandomString(14)}`;
       // Create order and update stock quantities in a transaction
       const order = await prismadb.$transaction(async (tx) => {
         // Create the order
@@ -143,6 +153,7 @@ export async function POST(
             phone,
             email: email || '',
             address: addressLine1,
+            razorOrderId,
             paymentMethod: 'CASH ON DELIVERY',
             paymentStatus: 'PAID',
             orderStatus: 'confirmed',
@@ -178,7 +189,7 @@ export async function POST(
       });
 
       return NextResponse.json({
-        orderId: order.id,
+        orderId: order.razorOrderId,
         message: "Order placed successfully with Cash on Delivery"
       }, {
         status: 200,
